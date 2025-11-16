@@ -1,3 +1,8 @@
 <Solution>
-  <Project Path="SimpleFEM/SimpleFEM.csproj" />
+  <Project Path="SimpleFEM.Core.Tests/SimpleFEM.Core.Tests.csproj" Id="48bf9abb-3605-4959-a14d-c1899604d7f3" />
+  <Project Path="SimpleFEM.Core/SimpleFEM.Core.csproj" Id="7efd1249-16ae-420e-933d-9ccd445762ec" />
+  <Project Path="SimpleFEM.Data.Tests/SimpleFEM.Data.Tests.csproj" Id="6e2747fe-7564-42a7-9f1e-db63dfcba3c2" />
+  <Project Path="SimpleFEM.Data/SimpleFEM.Data.csproj" Id="9c95df3f-d9b1-4364-b0ca-33271d2fd118" />
+  <Project Path="SimpleFEM.UI.Tests/SimpleFEM.UI.Tests.csproj" Id="a326b363-ba64-48dc-b2c1-685d50a707d6" />
+  <Project Path="SimpleFEM.UI/SimpleFEM.UI.csproj" />
 </Solution>
