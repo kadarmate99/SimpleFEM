@@ -5,26 +5,107 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleFEM"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
-        d:DesignHeight="250" d:DesignWidth="400" d:FontSize="18">
-    <Grid Margin="10">
+        Title="SimpleFEM" 
+        Height="600" Width="900"
+        d:DesignHeight="450" d:DesignWidth="800"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <!-- Menu -->
             <RowDefinition Height="Auto"/>
+            <!-- Toolbar/Tabs -->
+            <RowDefinition Height="*"/>
+            <!-- Main Workspace -->
+            <RowDefinition Height="Auto"/>
+            <!-- Status Bar -->
         </Grid.RowDefinitions>
 
-        <!-- Buttons -->
-        <StackPanel
-        Grid.Row = "2"
-        Orientation= "Horizontal"
-        HorizontalAlignment="Center">
-            <Button Width="180" >
-                <TextBlock Text="Test Button"/>
-            </Button>
-            <TextBox Width="180"/>
-        </StackPanel>
+        <Menu Grid.Row="0"
+              Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}">
+            <MenuItem Header="_File" Padding="8,-6">
+                <MenuItem Header="_Open..."/>
+                <MenuItem Header="_Save"/>
+                <MenuItem Header="Save _As..."/>
+                <Separator/>
+                <MenuItem Header="E_xit"/>
+            </MenuItem>
+            <MenuItem Header="_Edit" Padding="8,-6">
+                <MenuItem Header="_Undo"/>
+                <MenuItem Header="_Redo"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Tools in TabControl -->
+        <TabControl Grid.Row="1" Margin="12,4,0,0" Padding="12">
+            <TabItem Header="Geometry">
+                <StackPanel Orientation="Horizontal" Margin="-7,6">
+                    <TextBlock Text="Create:" Style="{StaticResource GroupLabelStyle}"/>
+                    <Button Content="Node" Style="{StaticResource ToolbarButtonStyle}"/>
+                    <Button Content="Line" Style="{StaticResource ToolbarButtonStyle}"/>
+
+                    <!-- Vertical Divider -->
+                    <Border Width="1" Height="24" Background="#E5E5E5" Margin="8,0,16,0"/>
+
+                    <TextBlock Text="Modify:" Style="{StaticResource GroupLabelStyle}"/>
+                    <Button Content="Move" Style="{StaticResource ToolbarButtonStyle}"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Elements &amp; Supports">
+                <StackPanel Orientation="Horizontal" Margin="-7,6">
+                    <TextBlock Text="Boundary:" Style="{StaticResource GroupLabelStyle}"/>
+                    <Button Content="Point Support" Style="{StaticResource ToolbarButtonStyle}"/>
+
+                    <Border Width="1" Height="24" Background="#E5E5E5" Margin="8,0,16,0"/>
+
+                    <TextBlock Text="Types:" Style="{StaticResource GroupLabelStyle}"/>
+                    <Button Content="Truss Element" Style="{StaticResource ToolbarButtonStyle}"/>
+                    <Button Content="Beam Element" Style="{StaticResource ToolbarButtonStyle}"/>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="Analysis">
+                <StackPanel Orientation="Horizontal" Margin="-7,6">
+                    <Button Content="Run Analysis" 
+                            Style="{StaticResource ToolbarButtonStyle}"
+                            FontWeight="Bold" />
+                    <Button Content="View Results" Style="{StaticResource ToolbarButtonStyle}"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <!-- Canvas -->
+        <Border Grid.Row="2" 
+                Background="#F9F9F9" 
+                BorderBrush="#E0E0E0"
+                BorderThickness="0,1,0,0">
+            <Grid>
+                <!-- Placeholder for the Canvas -->
+                <TextBlock Text="Model Viewport" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center" 
+                           Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" 
+                           FontSize="24" 
+                           FontWeight="Light"/>
+            </Grid>
+        </Border>
+
+        <!-- Status Bar -->
+        <StatusBar Grid.Row="3" Padding="10,4">
+            <StatusBarItem>
+                <TextBlock Text="Ready"/>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock Text="Nodes: 0"/>
+            </StatusBarItem>
+            <Separator/>
+            <StatusBarItem>
+                <TextBlock Text="Elements: 0"/>
+            </StatusBarItem>
+        </StatusBar>
 
     </Grid>
-
 </Window>
