@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleFEM"
+        xmlns:vm="clr-namespace:SimpleFEM.UI.ViewModels"
         mc:Ignorable="d"
         Title="SimpleFEM" 
+        WindowStartupLocation="CenterScreen"
         Height="600" Width="900"
-        d:DesignHeight="450" d:DesignWidth="800"
-        WindowStartupLocation="CenterScreen">
+        d:DesignHeight="450" d:DesignWidth="800" d:FontSize="16">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -29,7 +30,7 @@
                 <MenuItem Header="_Save"/>
                 <MenuItem Header="Save _As..."/>
                 <Separator/>
-                <MenuItem Header="E_xit"/>
+                <MenuItem Header="_Exit"/>
             </MenuItem>
             <MenuItem Header="_Edit" Padding="8,-6">
                 <MenuItem Header="_Undo"/>
@@ -42,8 +43,17 @@
             <TabItem Header="Geometry">
                 <StackPanel Orientation="Horizontal" Margin="-7,6">
                     <TextBlock Text="Create:" Style="{StaticResource GroupLabelStyle}"/>
-                    <Button Content="Node" Style="{StaticResource ToolbarButtonStyle}"/>
-                    <Button Content="Line" Style="{StaticResource ToolbarButtonStyle}"/>
+                    <Button 
+                        Content="Node" 
+                        Command="{Binding SelectToolCommand}"
+                        CommandParameter="Node"
+                        Style="{StaticResource ToolbarButtonStyle}"/>
+
+                    <Button 
+                        Content="Line" 
+                        Command="{Binding SelectToolCommand}"
+                        CommandParameter="Line"
+                        Style="{StaticResource ToolbarButtonStyle}"/>
 
                     <!-- Vertical Divider -->
                     <Border Width="1" Height="24" Background="#E5E5E5" Margin="8,0,16,0"/>
@@ -82,28 +92,69 @@
                 BorderBrush="#E0E0E0"
                 BorderThickness="0,1,0,0">
             <Grid>
-                <!-- Placeholder for the Canvas -->
-                <TextBlock Text="Model Viewport" 
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center" 
-                           Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" 
-                           FontSize="24" 
-                           FontWeight="Light"/>
+                <Canvas Background="Transparent" 
+                        MouseLeftButtonDown="OnCanvasClick"/>
+
+                <ItemsControl ItemsSource="{Binding Lines}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas IsItemsHost="True"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:LineViewModel}">
+                            <Line X1="{Binding X1}" Y1="{Binding Y1}"
+                                  X2="{Binding X2}" Y2="{Binding Y2}"
+                                  Stroke="Gray" StrokeThickness="2"
+                                  IsHitTestVisible="False"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <ItemsControl ItemsSource="{Binding Nodes}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas IsItemsHost="True"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemContainerStyle>
+                        <Style TargetType="ContentPresenter">
+                            <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                            <Setter Property="Canvas.Top" Value="{Binding Z}"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="-6,-6,0,0" IsHitTestVisible="False">
+                                <Ellipse Width="12" Height="12" 
+                                         Fill="#3399FF" 
+                                         Stroke="White" 
+                                         StrokeThickness="2">
+                                    <Ellipse.Effect>
+                                        <DropShadowEffect ShadowDepth="1" BlurRadius="4" Opacity="0.3"/>
+                                    </Ellipse.Effect>
+                                </Ellipse>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </Grid>
         </Border>
 
         <!-- Status Bar -->
         <StatusBar Grid.Row="3" Padding="10,4">
             <StatusBarItem>
-                <TextBlock Text="Ready"/>
+                <TextBlock Text="{Binding ActiveTool, StringFormat='Active Tool: {0}'}" FontWeight="SemiBold"/>
             </StatusBarItem>
             <Separator/>
             <StatusBarItem>
-                <TextBlock Text="Nodes: 0"/>
+                <TextBlock Text="{Binding Nodes.Count, StringFormat='Nodes: {0}'}"/>
             </StatusBarItem>
             <Separator/>
             <StatusBarItem>
-                <TextBlock Text="Elements: 0"/>
+                <TextBlock Text="{Binding Lines.Count, StringFormat='Lines: {0}'}"/>
             </StatusBarItem>
         </StatusBar>
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SimpleFEM.UI.ViewModels;
 using System.Windows;
 
 namespace SimpleFEM
@@ -24,6 +25,7 @@ namespace SimpleFEM
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton<MainWindow>();
+                    services.AddSingleton<MainViewModel>();
                 })
                 .Build();
         }

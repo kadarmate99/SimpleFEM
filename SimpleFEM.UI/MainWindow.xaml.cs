@@ -1,13 +1,6 @@
-﻿using System.Text;
+﻿using SimpleFEM.UI.ViewModels;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace SimpleFEM
 {
@@ -16,9 +9,24 @@ namespace SimpleFEM
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private readonly MainViewModel _viewModel;
+
+        public MainWindow(MainViewModel viewModel)
         {
             InitializeComponent();
+            _viewModel = viewModel;
+            DataContext = _viewModel;
+        }
+
+        private void OnCanvasClick(object sender, MouseButtonEventArgs e)
+        {
+            var element = (IInputElement)sender;
+            var position = e.GetPosition(element);
+
+            if (DataContext is MainViewModel vm)
+            {
+                vm.CanvasClickCommand.Execute(position);
+            }
         }
     }
 }
