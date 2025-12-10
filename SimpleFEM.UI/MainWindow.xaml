@@ -146,7 +146,7 @@
         <!-- Status Bar -->
         <StatusBar Grid.Row="3" Padding="10,4">
             <StatusBarItem>
-                <TextBlock Text="{Binding ActiveTool, StringFormat='Active Tool: {0}'}" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding ActiveTool.Name, StringFormat='Active Tool: {0}'}" FontWeight="SemiBold"/>
             </StatusBarItem>
             <Separator/>
             <StatusBarItem>

@@ -2,8 +2,10 @@
 using CommunityToolkit.Mvvm.Input;
 using SimpleFEM.Core.Interfaces;
 using SimpleFEM.Core.Models;
+using SimpleFEM.Core.Tools;
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Media.Imaging;
 
 namespace SimpleFEM.UI.ViewModels
 {
@@ -18,19 +20,30 @@ namespace SimpleFEM.UI.ViewModels
         public ObservableCollection<LineViewModel> Lines { get; } = new();
 
         [ObservableProperty]
-        private EditorTool _activeTool = EditorTool.None;
+        private IDrawingTool? _activeTool;
 
-        /// <summary>
-        /// State for the "Line" tool to remember the first click
-        /// </summary>
-        private NodeViewModel? _pendingFirstNode;
+        public IReadOnlyList<IDrawingTool> AvailableTools { get; }
 
-        public MainViewModel(IRepository<Node> nodeRepository, IRepository<Line> lineRepository)
+        public MainViewModel(
+            IRepository<Node> nodeRepository,
+            IRepository<Line> lineRepository,
+            IEnumerable<IDrawingTool> tools)
         {
             _nodeRepository = nodeRepository;
             _lineRepository = lineRepository;
+            AvailableTools = tools.ToList();
 
             LoadData();
+            SubscribeToTools();
+        }
+
+        private void SubscribeToTools()
+        {
+            // Tool state changes --> reload UI elements
+            foreach (var tool in AvailableTools)
+            {
+                tool.StateChanged += (s, e) => LoadData();
+            }
         }
 
         private void LoadData()
@@ -53,88 +66,18 @@ namespace SimpleFEM.UI.ViewModels
         [RelayCommand]
         private void SelectTool(string toolName) // TODO: Improve the tool selection button press mapping
         {
-            if (Enum.TryParse(toolName, out EditorTool tool))
-            {
-                ActiveTool = tool;
-                _pendingFirstNode = null; // Reset line state
-            }
+            ActiveTool?.Deactivate();
+            ActiveTool = AvailableTools
+                .FirstOrDefault(t => t.Name.Equals(toolName, StringComparison.OrdinalIgnoreCase));
+            ActiveTool?.Activate();
         }
 
         [RelayCommand]
-        private void CanvasClick(Point p)
+        private void CanvasClick(Point location)
         {
-            switch (ActiveTool)
-            {
-                case EditorTool.Node:
-                    CreateNode(p);
-                    break;
-                case EditorTool.Line:
-                    HandleLineToolClick(p);
-                    break;
-            }
+            ActiveTool?.HandleCanvasClick(location);
         }
 
         #endregion
-
-        // TODO: refactor this so it uses database and not direct instantiation
-        private NodeViewModel CreateNode(Point location)
-        {
-            var nodeModel = new Node
-            {
-                X = location.X,
-                Z = location.Y
-            };
-
-            _nodeRepository.Add(nodeModel);
-
-            var nodeVm = new NodeViewModel(nodeModel);
-            Nodes.Add(nodeVm);
-
-            return nodeVm;
-        }
-
-        private void HandleLineToolClick(Point p)
-        {
-            // Is the click near an existing node? // TODO: implement real hit testing service
-            var hitNode = Nodes.FirstOrDefault(n =>
-                Math.Abs(n.X - p.X) < 10 && Math.Abs(n.Z - p.Y) < 10);
-
-            // If no node exists there, create one implicitly
-            if (hitNode == null)
-            {
-                hitNode = CreateNode(p);
-            }
-
-            if (_pendingFirstNode == null)
-            {
-                // First click
-                _pendingFirstNode = hitNode;
-            }
-            else
-            {
-                // Second click
-                if (_pendingFirstNode != hitNode)
-                {
-                    CreateLine(_pendingFirstNode, hitNode);
-                    _pendingFirstNode = null; // Reset line state
-                }
-            }
-        }
-
-        // TODO: refactor this so it uses database and not direct instantiation
-        private void CreateLine(NodeViewModel start, NodeViewModel end)
-        {
-            var lineModel = new Line
-            {
-                INode = start.Model,
-                JNode = end.Model
-            };
-
-            _lineRepository.Add(lineModel);
-
-            // TODO: LineViewModel instantiation creates new NodeViewModels instead of reusing existing ones; verify if this causes issues.
-            var lineVm = new LineViewModel(lineModel);
-            Lines.Add(lineVm);
-        }
     }
 }

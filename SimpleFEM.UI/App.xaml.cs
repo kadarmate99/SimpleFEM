@@ -4,6 +4,8 @@ using Microsoft.Extensions.Hosting;
 using SimpleFEM.Core.Interfaces;
 using SimpleFEM.Core.Models;
 using SimpleFEM.Core.Repositories;
+using SimpleFEM.Core.Services.GeometryService;
+using SimpleFEM.Core.Tools;
 using SimpleFEM.UI.ViewModels;
 using System.Windows;
 
@@ -27,8 +29,12 @@ namespace SimpleFEM
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddTransient<IRepository<Node>, InMemoryRepository<Node>>();
-                    services.AddTransient<IRepository<Line>, InMemoryRepository<Line>>();
+                    services.AddSingleton<IRepository<Node>, InMemoryRepository<Node>>();
+                    services.AddSingleton<IRepository<Line>, InMemoryRepository<Line>>();
+
+                    services.AddSingleton<IGeometryService, GeometryService>();
+                    services.AddTransient<IDrawingTool, NodeTool>();
+                    services.AddTransient<IDrawingTool, LineTool>();
 
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<MainViewModel>();
