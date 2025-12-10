@@ -1,6 +1,8 @@
-﻿namespace SimpleFEM.Core.Models
+﻿using SimpleFEM.Core.Interfaces;
+
+namespace SimpleFEM.Core.Models
 {
-    public class Node
+    public class Node : IEntity
     {
         public int Id { get; set; }
 
