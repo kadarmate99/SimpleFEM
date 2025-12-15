@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using SimpleFEM.Core.Commands;
 using SimpleFEM.Core.Interfaces;
 using SimpleFEM.Core.Models;
 using SimpleFEM.Core.Tools;
@@ -14,6 +15,7 @@ namespace SimpleFEM.UI.ViewModels
     {
         private readonly IRepository<Node> _nodeRepository;
         private readonly IRepository<Line> _lineRepository;
+        private readonly CommandManager _commandManager;
 
         // UI State
         public ObservableCollection<NodeViewModel> Nodes { get; } = new();
@@ -22,19 +24,36 @@ namespace SimpleFEM.UI.ViewModels
         [ObservableProperty]
         private IDrawingTool? _activeTool;
 
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(UndoCommand))]
+        private bool _canUndo;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(RedoCommand))]
+        private bool _canRedo;
+
+        [ObservableProperty]
+        private string? _nextUndoDescription;
+
+        [ObservableProperty]
+        private string? _nextRedoDescription;
+
         public IReadOnlyList<IDrawingTool> AvailableTools { get; }
 
         public MainViewModel(
             IRepository<Node> nodeRepository,
             IRepository<Line> lineRepository,
-            IEnumerable<IDrawingTool> tools)
+            IEnumerable<IDrawingTool> tools,
+            CommandManager commandManager)
         {
             _nodeRepository = nodeRepository;
             _lineRepository = lineRepository;
+            _commandManager = commandManager;
             AvailableTools = tools.ToList();
 
             LoadData();
             SubscribeToTools();
+            SubscribeToCommandManager();
         }
 
         private void SubscribeToTools()
@@ -44,6 +63,18 @@ namespace SimpleFEM.UI.ViewModels
             {
                 tool.StateChanged += (s, e) => LoadData();
             }
+        }
+
+        private void SubscribeToCommandManager()
+        {
+            _commandManager.CommandHistoryChanged += (s, e) =>
+            {
+                CanUndo = _commandManager.CanUndo;
+                CanRedo = _commandManager.CanRedo;
+                NextUndoDescription = _commandManager.NextUndoDescription;
+                NextRedoDescription = _commandManager.NextRedoDescription;
+                LoadData(); // Refresh UI after undo/redo
+            };
         }
 
         private void LoadData()
@@ -76,6 +107,18 @@ namespace SimpleFEM.UI.ViewModels
         private void CanvasClick(Point location)
         {
             ActiveTool?.HandleCanvasClick(location);
+        }
+
+        [RelayCommand(CanExecute = nameof(CanUndo))]
+        private void Undo()
+        {
+            _commandManager.Undo();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanRedo))]
+        private void Redo()
+        {
+            _commandManager.Redo();
         }
 
         #endregion

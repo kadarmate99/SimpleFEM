@@ -8,8 +8,22 @@ namespace SimpleFEM.Core.Repositories
 
         public void Add(TModel entity)
         {
-            int newId = _items.Any() ? _items.Max(i => i.Id) + 1 : 1;
-            entity.Id = newId;
+            // Only generate ID if not already set (support undo)
+            if (entity.Id == 0)
+            {
+                // Id not set, generate new ID
+                int newId = _items.Any() ? _items.Max(i => i.Id) + 1 : 1;
+                entity.Id = newId;
+            }
+            else
+            {
+                // Restoring an entity with existing ID
+                // verify it's unique
+                if (_items.Any(i => i.Id == entity.Id))
+                    throw new InvalidOperationException($"Entity with ID {entity.Id} already exists.");
+            }
+
+
             _items.Add(entity);
         }
 
@@ -22,10 +36,7 @@ namespace SimpleFEM.Core.Repositories
             }
         }
 
-        public IEnumerable<TModel> GetAll()
-        {
-            return _items.ToList();
-        }
+        public IEnumerable<TModel> GetAll() => _items.ToList();
 
         public TModel GetById(int id)
         {

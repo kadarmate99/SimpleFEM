@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SimpleFEM.Core.Commands;
 using SimpleFEM.Core.Interfaces;
 using SimpleFEM.Core.Models;
 using SimpleFEM.Core.Repositories;
@@ -33,6 +34,8 @@ namespace SimpleFEM
                     services.AddSingleton<IRepository<Line>, InMemoryRepository<Line>>();
 
                     services.AddSingleton<IGeometryService, GeometryService>();
+                    services.AddSingleton<CommandManager>();
+
                     services.AddTransient<IDrawingTool, NodeTool>();
                     services.AddTransient<IDrawingTool, LineTool>();
 

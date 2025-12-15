@@ -1,7 +1,9 @@
-﻿using SimpleFEM.Core.Interfaces;
+﻿using SimpleFEM.Core.Commands;
+using SimpleFEM.Core.Interfaces;
 using SimpleFEM.Core.Models;
 using SimpleFEM.Core.Services.GeometryService;
 using System.Windows;
+using System.Windows.Input;
 using Line = SimpleFEM.Core.Models.Line;
 
 namespace SimpleFEM.Core.Tools
@@ -11,7 +13,7 @@ namespace SimpleFEM.Core.Tools
         private readonly IRepository<Line> _lineRepository;
         private readonly IRepository<Node> _nodeRepository;
         private readonly IGeometryService _geometryService;
-
+        private readonly Commands.CommandManager _commandManager;
         private Node? _firstNode;
         private Node? _secondNode;
 
@@ -26,11 +28,13 @@ namespace SimpleFEM.Core.Tools
         public LineTool(
             IRepository<Line> lineRepository,
             IRepository<Node> nodeRepository,
-            IGeometryService geometryService)
+            IGeometryService geometryService,
+            Commands.CommandManager commandManager)
         {
             _lineRepository = lineRepository;
             _nodeRepository = nodeRepository;
             _geometryService = geometryService;
+            _commandManager = commandManager;
         }
 
         public void Activate()
@@ -52,7 +56,10 @@ namespace SimpleFEM.Core.Tools
         public void Reset()
         {
             if (InProgress)
-                _nodeRepository.Delete(_firstNode!.Id);
+            {
+                var deleteCommand = new DeleteNodeCommand(_nodeRepository, _firstNode!);
+                _commandManager.ExecuteCommand(deleteCommand);
+            }
 
             _firstNode = null;
             _secondNode = null;
@@ -76,7 +83,9 @@ namespace SimpleFEM.Core.Tools
 
                 if (_firstNode.Id != _secondNode.Id)
                 {
-                    CreateLine(_firstNode, _secondNode);
+                    var createLineCommand = new CreateLineCommand(
+                        _lineRepository, _firstNode, _secondNode);
+                    _commandManager.ExecuteCommand(createLineCommand);
                 }
 
                 Reset();
@@ -95,25 +104,10 @@ namespace SimpleFEM.Core.Tools
                 return existingNode;
 
             // No existing node, create new
-            var nodeModel = new Node
-            {
-                X = location.X,
-                Z = location.Y
-            };
-            _nodeRepository.Add(nodeModel);
-            return nodeModel;
-        }
+            var createNodeCommand = new CreateNodeCommand(_nodeRepository, location.X, location.Y);
+            _commandManager.ExecuteCommand(createNodeCommand);
 
-        private Line CreateLine(Node start, Node end)
-        {
-            var lineModel = new Line
-            {
-                INode = start,
-                JNode = end
-            };
-
-            _lineRepository.Add(lineModel);
-            return lineModel;
+            return createNodeCommand.CreatedNode!;
         }
     }
 }
