@@ -1,12 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SimpleFEM.Core.Commands;
 using SimpleFEM.Core.Interfaces;
 using SimpleFEM.Core.Models;
-using SimpleFEM.Core.Repositories;
 using SimpleFEM.Core.Services.GeometryService;
 using SimpleFEM.Core.Tools;
+using SimpleFEM.Data;
+using SimpleFEM.Data.Repositories;
 using SimpleFEM.UI.ViewModels;
 using System.Windows;
 
@@ -17,8 +19,9 @@ namespace SimpleFEM
     /// </summary>
     public partial class App : Application
     {
-
         private readonly IHost _host;
+        // fixed file path for testing
+        private const string DEFAULT_DB_PATH = "C:\\Users\\MateKadar\\Downloads\\SimpleFEMtest.db";
 
         public App()
         {
@@ -30,8 +33,12 @@ namespace SimpleFEM
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddSingleton<IRepository<Node>, InMemoryRepository<Node>>();
-                    services.AddSingleton<IRepository<Line>, InMemoryRepository<Line>>();
+                    services.AddDbContext<DataContext>(options =>
+                    options.UseSqlite($"Data Source={DEFAULT_DB_PATH}"),
+                    ServiceLifetime.Singleton);
+
+                    services.AddSingleton<IRepository<Node>, EfRepository<Node>>();
+                    services.AddSingleton<IRepository<Line>, EfRepository<Line>>();
 
                     services.AddSingleton<IGeometryService, GeometryService>();
                     services.AddSingleton<CommandManager>();
@@ -48,6 +55,9 @@ namespace SimpleFEM
         protected override async void OnStartup(StartupEventArgs e)
         {
             await _host.StartAsync();
+
+            var context = _host.Services.GetRequiredService<DataContext>();
+            await context.Database.MigrateAsync();
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
