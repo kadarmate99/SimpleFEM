@@ -1,4 +1,4 @@
-﻿namespace SimpleFEM.Core.Interfaces
+﻿namespace SimpleFEM.Core.Models
 {
     public interface IEntity
     {

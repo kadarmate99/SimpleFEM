@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -8,7 +9,9 @@ using SimpleFEM.Core.Models;
 using SimpleFEM.Core.Services.GeometryService;
 using SimpleFEM.Core.Tools;
 using SimpleFEM.Data;
-using SimpleFEM.Data.Repositories;
+using SimpleFEM.Data.Factories;
+using SimpleFEM.Data.Repositories.EfCore;
+using SimpleFEM.Data.Services;
 using SimpleFEM.UI.ViewModels;
 using System.Windows;
 
@@ -20,8 +23,6 @@ namespace SimpleFEM
     public partial class App : Application
     {
         private readonly IHost _host;
-        // fixed file path for testing
-        private const string DEFAULT_DB_PATH = "C:\\Users\\MateKadar\\Downloads\\SimpleFEMtest.db";
 
         public App()
         {
@@ -33,12 +34,12 @@ namespace SimpleFEM
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    services.AddDbContext<DataContext>(options =>
-                    options.UseSqlite($"Data Source={DEFAULT_DB_PATH}"),
-                    ServiceLifetime.Singleton);
+                    services.AddSingleton<IDbContextFactory<DataContext>, ModelFileDbContextFactory>();
 
-                    services.AddSingleton<IRepository<Node>, EfRepository<Node>>();
-                    services.AddSingleton<IRepository<Line>, EfRepository<Line>>();
+                    services.AddSingleton<IModelFileService, SqliteModelFileService>();
+
+                    services.AddSingleton<IRepository<Node>, NodeEfRepository>();
+                    services.AddSingleton<IRepository<Line>, LineEfRepository>();
 
                     services.AddSingleton<IGeometryService, GeometryService>();
                     services.AddSingleton<CommandManager>();
@@ -56,8 +57,9 @@ namespace SimpleFEM
         {
             await _host.StartAsync();
 
-            var context = _host.Services.GetRequiredService<DataContext>();
-            await context.Database.MigrateAsync();
+            // not needed if factory is used to create DB context
+            /*var context = _host.Services.GetRequiredService<DataContext>();
+            await context.Database.MigrateAsync();*/
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
@@ -67,6 +69,10 @@ namespace SimpleFEM
 
         protected override async void OnExit(ExitEventArgs e)
         {
+            // Ensure any open model file is closed before exit
+            var fileService = _host.Services.GetRequiredService<IModelFileService>();
+            fileService.CloseCurrentModelFile();
+
             using (_host)
             {
                 await _host.StopAsync();

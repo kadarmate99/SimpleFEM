@@ -1,6 +1,7 @@
 ﻿using SimpleFEM.Core.Interfaces;
+using SimpleFEM.Core.Models;
 
-namespace SimpleFEM.Data.Repositories
+namespace SimpleFEM.Data.Repositories.InMemory
 {
     public class InMemoryRepository<TModel> : IRepository<TModel> where TModel : IEntity
     {

@@ -23,5 +23,16 @@ namespace SimpleFEM.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
         }
+
+        // This way the app supports factory-created contexts
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                // This should not happen with proper factory setup
+                throw new InvalidOperationException(
+                    "DbContext must be configured with a connection string via the factory.");
+            }
+        }
     }
 }

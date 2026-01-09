@@ -1,4 +1,6 @@
-﻿namespace SimpleFEM.Core.Interfaces
+﻿using SimpleFEM.Core.Models;
+
+namespace SimpleFEM.Core.Interfaces
 {
     public interface IRepository<TModel> where TModel : IEntity
     {

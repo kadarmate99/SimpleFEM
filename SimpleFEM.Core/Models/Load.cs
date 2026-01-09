@@ -1,6 +1,4 @@
-﻿using SimpleFEM.Core.Interfaces;
-
-namespace SimpleFEM.Core.Models
+﻿namespace SimpleFEM.Core.Models
 {
     public class Load : IEntity
     {

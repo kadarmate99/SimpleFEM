@@ -6,16 +6,16 @@
         xmlns:local="clr-namespace:SimpleFEM"
         xmlns:vm="clr-namespace:SimpleFEM.UI.ViewModels"
         mc:Ignorable="d"
-        Title="SimpleFEM" 
         WindowStartupLocation="CenterScreen"
         Height="600" Width="900"
-        d:DesignHeight="450" d:DesignWidth="800" d:FontSize="16">
-    
+        d:DesignHeight="450" d:DesignWidth="800" d:FontSize="16"
+        Title="{Binding WindowTitle}">
+
     <Window.InputBindings>
         <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}"/>
         <KeyBinding Key="Y" Modifiers="Control" Command="{Binding RedoCommand}"/>
     </Window.InputBindings>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -31,9 +31,9 @@
         <Menu Grid.Row="0"
               Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}">
             <MenuItem Header="_File" Padding="8,-6">
-                <MenuItem Header="_Open..."/>
-                <MenuItem Header="_Save"/>
-                <MenuItem Header="Save _As..."/>
+                <MenuItem Header="_New" Command="{Binding NewModelFileCommand}" />
+                <MenuItem Header="_Open..." Command="{Binding OpenModelFileCommand}" />
+                <MenuItem Header="Save _As..." Command="{Binding SaveModelFileAsCommand}" />
                 <Separator/>
                 <MenuItem Header="_Exit"/>
             </MenuItem>
@@ -43,7 +43,7 @@
                           InputGestureText="Ctrl+Z">
                     <MenuItem.Icon>
                         <TextBlock Text="↶" FontSize="16"/>
-                    </MenuItem.Icon>                    
+                    </MenuItem.Icon>
                 </MenuItem>
                 <MenuItem Header="_Redo"
                           Command="{Binding RedoCommand}"
