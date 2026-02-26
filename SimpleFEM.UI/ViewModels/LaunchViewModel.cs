@@ -9,12 +9,10 @@ namespace SimpleFEM.UI.ViewModels
     public partial class LaunchViewModel : ObservableObject
     {
         private readonly IModelFileService _modelFileService;
-        private readonly MainWindow _mainWindow;
 
-        public LaunchViewModel(IModelFileService modelFileService, MainWindow mainWindow)
+        public LaunchViewModel(IModelFileService modelFileService)
         {
             _modelFileService = modelFileService;
-            _mainWindow = mainWindow;
         }
 
         [RelayCommand]
@@ -33,7 +31,6 @@ namespace SimpleFEM.UI.ViewModels
                 try
                 {
                     _modelFileService.NewModelFile(dialog.FileName);
-                    OpenMainWindowCloseLaunchWindow();
                 }
                 catch (Exception ex)
                 {
@@ -59,7 +56,6 @@ namespace SimpleFEM.UI.ViewModels
                 try
                 {
                     _modelFileService.OpenModelFile(dialog.FileName);
-                    OpenMainWindowCloseLaunchWindow();
                 }
                 catch (Exception ex)
                 {
@@ -67,12 +63,6 @@ namespace SimpleFEM.UI.ViewModels
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-        }
-
-        private void OpenMainWindowCloseLaunchWindow()
-        {
-            _mainWindow.Show();
-            // how to close current launch window wit this view model?
         }
     }
 }
