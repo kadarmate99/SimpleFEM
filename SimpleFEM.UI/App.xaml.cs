@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,6 +12,7 @@ using SimpleFEM.Data.Factories;
 using SimpleFEM.Data.Repositories.EfCore;
 using SimpleFEM.Data.Services;
 using SimpleFEM.UI.ViewModels;
+using SimpleFEM.UI.Views;
 using System.Windows;
 
 namespace SimpleFEM
@@ -49,6 +49,12 @@ namespace SimpleFEM
 
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<MainViewModel>();
+
+                    services.AddSingleton<MainWindow>();
+                    services.AddSingleton<MainViewModel>();
+
+                    services.AddTransient<LaunchWindow>();
+                    services.AddTransient<LaunchViewModel>();
                 })
                 .Build();
         }
@@ -57,13 +63,20 @@ namespace SimpleFEM
         {
             await _host.StartAsync();
 
-            // not needed if factory is used to create DB context
-            /*var context = _host.Services.GetRequiredService<DataContext>();
-            await context.Database.MigrateAsync();*/
+            // Initial window. User Opens or Creates new file and opens it. Uses IModelFileService.
+            var launchScreen = _host.Services.GetRequiredService<LaunchWindow>();
 
-            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-            mainWindow.Show();
+            // Sends event if a file is opened --> Open main view 
+            var modelFileService = _host.Services.GetRequiredService<IModelFileService>();
+            modelFileService.ModelFileChanged += (s, args) =>
+            {
+                var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+                mainWindow.Show();
+                launchScreen.Close();
+            };
 
+            launchScreen.Show();
+            
             base.OnStartup(e);
         }
 

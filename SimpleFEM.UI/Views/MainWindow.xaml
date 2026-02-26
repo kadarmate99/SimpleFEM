@@ -18,14 +18,14 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <!-- Menu -->
             <RowDefinition Height="Auto"/>
             <!-- Toolbar/Tabs -->
-            <RowDefinition Height="*"/>
-            <!-- Main Workspace -->
             <RowDefinition Height="Auto"/>
+            <!-- Main Workspace -->
+            <RowDefinition Height="*"/>
             <!-- Status Bar -->
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0"

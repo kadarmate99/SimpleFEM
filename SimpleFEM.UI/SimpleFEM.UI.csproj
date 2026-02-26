@@ -34,8 +34,4 @@
     <ProjectReference Include="..\SimpleFEM.Data\SimpleFEM.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Views\" />
-  </ItemGroup>
-
 </Project>
