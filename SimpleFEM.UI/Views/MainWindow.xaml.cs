@@ -1,8 +1,7 @@
 ﻿using SimpleFEM.UI.ViewModels;
 using System.Windows;
-using System.Windows.Input;
 
-namespace SimpleFEM
+namespace SimpleFEM.UI.Views
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -16,17 +15,6 @@ namespace SimpleFEM
             InitializeComponent();
             _viewModel = viewModel;
             DataContext = _viewModel;
-        }
-
-        private void OnCanvasClick(object sender, MouseButtonEventArgs e)
-        {
-            var element = (IInputElement)sender;
-            var position = e.GetPosition(element);
-
-            if (DataContext is MainViewModel vm)
-            {
-                vm.CanvasClickCommand.Execute(position);
-            }
         }
     }
 }

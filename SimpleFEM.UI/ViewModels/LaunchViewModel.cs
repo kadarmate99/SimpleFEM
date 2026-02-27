@@ -1,22 +1,24 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SimpleFEM.Data.Services;
+using SimpleFEM.UI.Navigation;
 using System.Windows;
 
 namespace SimpleFEM.UI.ViewModels
 {
-    public partial class LaunchViewModel : ObservableObject
+    public partial class LaunchViewModel : NavigableViewModelBase
     {
         private readonly IModelFileService _modelFileService;
+        private readonly INavigationService _navigationService;
 
-        public LaunchViewModel(IModelFileService modelFileService)
+        public LaunchViewModel(IModelFileService modelFileService, INavigationService navigationService)
         {
             _modelFileService = modelFileService;
+            _navigationService = navigationService;
         }
 
         [RelayCommand]
-        private void NewModelFile()
+        private async Task NewModelFile()
         {
             var dialog = new SaveFileDialog
             {
@@ -31,6 +33,7 @@ namespace SimpleFEM.UI.ViewModels
                 try
                 {
                     _modelFileService.NewModelFile(dialog.FileName);
+                    await _navigationService.NavigateToAsync<CanvasViewModel>();
                 }
                 catch (Exception ex)
                 {
@@ -41,7 +44,7 @@ namespace SimpleFEM.UI.ViewModels
         }
 
         [RelayCommand]
-        private void OpenModelFile()
+        private async Task OpenModelFile()
         {
             var dialog = new OpenFileDialog
             {
@@ -56,6 +59,7 @@ namespace SimpleFEM.UI.ViewModels
                 try
                 {
                     _modelFileService.OpenModelFile(dialog.FileName);
+                    await _navigationService.NavigateToAsync<CanvasViewModel>();
                 }
                 catch (Exception ex)
                 {

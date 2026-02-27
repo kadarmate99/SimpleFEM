@@ -11,6 +11,7 @@ using SimpleFEM.Data;
 using SimpleFEM.Data.Factories;
 using SimpleFEM.Data.Repositories.EfCore;
 using SimpleFEM.Data.Services;
+using SimpleFEM.UI.Navigation;
 using SimpleFEM.UI.ViewModels;
 using SimpleFEM.UI.Views;
 using System.Windows;
@@ -47,14 +48,16 @@ namespace SimpleFEM
                     services.AddTransient<IDrawingTool, NodeTool>();
                     services.AddTransient<IDrawingTool, LineTool>();
 
+                    // Navigation infrastructure
+                    services.AddSingleton<INavigationService, NavigationService>();
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<MainViewModel>();
 
-                    services.AddSingleton<MainWindow>();
-                    services.AddSingleton<MainViewModel>();
-
-                    services.AddTransient<LaunchWindow>();
+                    // Navigable ViewModels
+                    services.AddTransient<LaunchView>();
                     services.AddTransient<LaunchViewModel>();
+                    services.AddTransient<CanvasView>();
+                    services.AddTransient<CanvasViewModel>();
                 })
                 .Build();
         }
@@ -63,20 +66,13 @@ namespace SimpleFEM
         {
             await _host.StartAsync();
 
-            // Initial window. User Opens or Creates new file and opens it. Uses IModelFileService.
-            var launchScreen = _host.Services.GetRequiredService<LaunchWindow>();
+            var navigationService = _host.Services.GetRequiredService<INavigationService>();
+            await navigationService.NavigateToAsync<LaunchViewModel>();
 
-            // Sends event if a file is opened --> Open main view 
-            var modelFileService = _host.Services.GetRequiredService<IModelFileService>();
-            modelFileService.ModelFileChanged += (s, args) =>
-            {
-                var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-                mainWindow.Show();
-                launchScreen.Close();
-            };
+            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            mainWindow.Show();
 
-            launchScreen.Show();
-            
+
             base.OnStartup(e);
         }
 

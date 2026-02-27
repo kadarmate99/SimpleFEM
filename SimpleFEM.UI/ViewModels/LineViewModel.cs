@@ -3,7 +3,7 @@ using SimpleFEM.Core.Models;
 
 namespace SimpleFEM.UI.ViewModels
 {
-    public partial class LineViewModel :ObservableObject
+    public partial class LineViewModel : ObservableObject
     {
         private readonly Line _model;
 
