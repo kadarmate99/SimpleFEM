@@ -1,12 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
 using SimpleFEM.Core.Commands;
 using SimpleFEM.Core.Interfaces;
 using SimpleFEM.Core.Models;
 using SimpleFEM.Core.Tools;
-using SimpleFEM.Data.Services;
-using SimpleFEM.UI.Navigation;
+using SimpleFEM.UI.Services;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -18,8 +16,7 @@ namespace SimpleFEM.UI.ViewModels
         private readonly IRepository<Node> _nodeRepository;
         private readonly IRepository<Line> _lineRepository;
         private readonly CommandManager _commandManager;
-        private readonly IModelFileService _modelFileService;
-        private readonly INavigationService _navigationService;
+        private readonly IModelLoadingService _modelLoadingService;
 
 
         // UI State
@@ -51,15 +48,12 @@ namespace SimpleFEM.UI.ViewModels
             IRepository<Line> lineRepository,
             IEnumerable<IDrawingTool> tools,
             CommandManager commandManager,
-            IModelFileService modelFileService,
-            INavigationService navigationService)
+            IModelLoadingService modelLoadingService)
         {
             _nodeRepository = nodeRepository;
             _lineRepository = lineRepository;
             _commandManager = commandManager;
-            _modelFileService = modelFileService;
-            _navigationService = navigationService;
-
+            _modelLoadingService = modelLoadingService;
             AvailableTools = tools.ToList();
         }
 
@@ -131,86 +125,13 @@ namespace SimpleFEM.UI.ViewModels
 
         #region Commands
         [RelayCommand]
-        private async Task NewModelFileAsync()
-        {
-            var dialog = new SaveFileDialog
-            {
-                Filter = "FEM Model Files (*.fem)|*.fem|All Files (*.*)|*.*",
-                DefaultExt = ".fem",
-                AddExtension = true,
-                Title = "Create New FEM Model"
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                try
-                {
-                    _modelFileService.NewModelFile(dialog.FileName);
-                    await _navigationService.NavigateToAsync<CanvasViewModel>();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to create model file: {ex.Message}",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
+        private async Task NewModelFileAsync() => await _modelLoadingService.NewModelAsync();
 
         [RelayCommand]
-        private async Task OpenModelFileAsync()
-        {
-            var dialog = new OpenFileDialog
-            {
-                Filter = "FEM Model Files (*.fem)|*.fem|All Files (*.*)|*.*",
-                DefaultExt = ".fem",
-                AddExtension = true,
-                Title = "Open New FEM Model"
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                try
-                {
-                    _modelFileService.OpenModelFile(dialog.FileName);
-                    await _navigationService.NavigateToAsync<CanvasViewModel>();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to open model file: {ex.Message}",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
+        private async Task OpenModelFileAsync() => await _modelLoadingService.OpenModelAsync();
 
         [RelayCommand]
-        private async Task SaveModelFileAs()
-        {
-            if (!_modelFileService.IsModelFileOpen)
-                return;
-
-            var dialog = new SaveFileDialog
-            {
-                Filter = "FEM Model Files (*.fem)|*.fem|All Files (*.*)|*.*",
-                DefaultExt = ".fem",
-                AddExtension = true,
-                Title = "Save FEM Model As"
-            };
-
-            if (dialog.ShowDialog() == true)
-            {
-                try
-                {
-                    _modelFileService.SaveModelFileAs(dialog.FileName);
-                    MessageBox.Show("Model File saved successfully.",
-                        "Save As", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to save Model File: {ex.Message}",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
+        private async Task SaveModelFileAs() => await _modelLoadingService.SaveModelAsAsync();
 
         [RelayCommand]
         private void SelectTool(string toolName) // TODO: Improve the tool selection button press mapping

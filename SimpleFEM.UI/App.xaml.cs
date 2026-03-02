@@ -12,6 +12,7 @@ using SimpleFEM.Data.Factories;
 using SimpleFEM.Data.Repositories.EfCore;
 using SimpleFEM.Data.Services;
 using SimpleFEM.UI.Navigation;
+using SimpleFEM.UI.Services;
 using SimpleFEM.UI.ViewModels;
 using SimpleFEM.UI.Views;
 using System.Windows;
@@ -38,6 +39,8 @@ namespace SimpleFEM
                     services.AddSingleton<IDbContextFactory<DataContext>, ModelFileDbContextFactory>();
 
                     services.AddSingleton<IModelFileService, SqliteModelFileService>();
+                    services.AddSingleton<IDialogService, DialogService>();
+                    services.AddSingleton<IModelLoadingService, ModelLoadingService>();
 
                     services.AddSingleton<IRepository<Node>, NodeEfRepository>();
                     services.AddSingleton<IRepository<Line>, LineEfRepository>();
