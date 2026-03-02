@@ -7,7 +7,6 @@
         xmlns:local="clr-namespace:SimpleFEM"
         xmlns:vm="clr-namespace:SimpleFEM.UI.ViewModels"
         mc:Ignorable="d"
-        Height="600" Width="900"
         d:DesignHeight="450" d:DesignWidth="800" d:FontSize="16"
              >
 

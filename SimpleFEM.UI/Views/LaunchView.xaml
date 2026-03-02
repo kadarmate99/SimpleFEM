@@ -6,7 +6,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SimpleFEM.UI.Views"
         mc:Ignorable="d"
-        Height="300" Width="450"
         d:DesignHeight="150" d:DesignWidth="225" d:FontSize="16"
         >
     <Grid>
