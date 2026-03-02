@@ -61,37 +61,57 @@ namespace SimpleFEM.UI.ViewModels
             _navigationService = navigationService;
 
             AvailableTools = tools.ToList();
-
-            SubscribeToTools();
-            SubscribeToCommandManager();
         }
 
         public override Task OnNavigatedToAsync()
         {
+            SubscribeToEvents();
             LoadData();
             return Task.CompletedTask;
         }
 
-        private void SubscribeToTools()
+        public override Task OnNavigatedFromAsync()
+        {
+            UnsubscribeFromEvents();
+            return Task.CompletedTask;
+        }
+
+        private void SubscribeToEvents()
         {
             // Tool state changes --> reload UI elements
             foreach (var tool in AvailableTools)
             {
-                tool.StateChanged += (s, e) => LoadData();
+                tool.StateChanged += OnToolStateChanged;
             }
+
+            _commandManager.CommandHistoryChanged += OnCommandHistoryChanged;
         }
 
-        private void SubscribeToCommandManager()
+        private void UnsubscribeFromEvents()
         {
-            _commandManager.CommandHistoryChanged += (s, e) =>
+            // Tool state changes --> reload UI elements
+            foreach (var tool in AvailableTools)
             {
-                CanUndo = _commandManager.CanUndo;
-                CanRedo = _commandManager.CanRedo;
-                NextUndoDescription = _commandManager.NextUndoDescription;
-                NextRedoDescription = _commandManager.NextRedoDescription;
-                LoadData(); // Refresh UI after undo/redo
-            };
+                tool.StateChanged -= OnToolStateChanged;
+            }
+
+            _commandManager.CommandHistoryChanged -= OnCommandHistoryChanged;
         }
+
+        private void OnCommandHistoryChanged(object? sender, EventArgs e)
+        {
+            CanUndo = _commandManager.CanUndo;
+            CanRedo = _commandManager.CanRedo;
+            NextUndoDescription = _commandManager.NextUndoDescription;
+            NextRedoDescription = _commandManager.NextRedoDescription;
+            LoadData(); // Refresh UI after undo/redo
+        }
+
+        private void OnToolStateChanged(object? sender, EventArgs e)
+        {
+            LoadData();
+        }
+
 
         private void LoadData()
         {
