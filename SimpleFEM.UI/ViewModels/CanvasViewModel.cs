@@ -15,7 +15,7 @@ namespace SimpleFEM.UI.ViewModels
     {
         private readonly IRepository<Node> _nodeRepository;
         private readonly IRepository<Line> _lineRepository;
-        private readonly CommandManager _commandManager;
+        private readonly ICommandManager _commandManager;
         private readonly IModelLoadingService _modelLoadingService;
 
 
@@ -47,7 +47,7 @@ namespace SimpleFEM.UI.ViewModels
             IRepository<Node> nodeRepository,
             IRepository<Line> lineRepository,
             IEnumerable<IDrawingTool> tools,
-            CommandManager commandManager,
+            ICommandManager commandManager,
             IModelLoadingService modelLoadingService)
         {
             _nodeRepository = nodeRepository;

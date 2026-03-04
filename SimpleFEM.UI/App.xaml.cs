@@ -46,17 +46,17 @@ namespace SimpleFEM
                     services.AddSingleton<IRepository<Line>, LineEfRepository>();
 
                     services.AddSingleton<IGeometryService, GeometryService>();
-                    services.AddSingleton<CommandManager>();
+                    services.AddSingleton<ICommandManager, CommandManager>();
 
-                    services.AddTransient<IDrawingTool, NodeTool>();
-                    services.AddTransient<IDrawingTool, LineTool>();
-
-                    // Navigation infrastructure
                     services.AddSingleton<INavigationService, NavigationService>();
                     services.AddSingleton<MainWindow>();
                     services.AddSingleton<MainViewModel>();
 
-                    // Navigable ViewModels
+                    // ----------------------------------------------
+
+                    services.AddTransient<IDrawingTool, NodeTool>();
+                    services.AddTransient<IDrawingTool, LineTool>();
+
                     services.AddTransient<LaunchView>();
                     services.AddTransient<LaunchViewModel>();
                     services.AddTransient<CanvasView>();

@@ -10,7 +10,7 @@ namespace SimpleFEM.Core.Tools
     {
         private IRepository<Node> _nodeRepository;
         private IGeometryService _geometryService;
-        private readonly CommandManager _commandManager;
+        private readonly ICommandManager _commandManager;
 
         public string Name => "Node";
         public bool InProgress => false; // No half done state. Always ready for next click
@@ -21,7 +21,7 @@ namespace SimpleFEM.Core.Tools
         public NodeTool(
             IRepository<Node> nodeRepository, 
             IGeometryService geometryService,
-            CommandManager commandManager)
+            ICommandManager commandManager)
         {
             _nodeRepository = nodeRepository;
             _geometryService = geometryService;

@@ -3,7 +3,6 @@ using SimpleFEM.Core.Interfaces;
 using SimpleFEM.Core.Models;
 using SimpleFEM.Core.Services.GeometryService;
 using System.Windows;
-using System.Windows.Input;
 using Line = SimpleFEM.Core.Models.Line;
 
 namespace SimpleFEM.Core.Tools
@@ -13,7 +12,7 @@ namespace SimpleFEM.Core.Tools
         private readonly IRepository<Line> _lineRepository;
         private readonly IRepository<Node> _nodeRepository;
         private readonly IGeometryService _geometryService;
-        private readonly Commands.CommandManager _commandManager;
+        private readonly ICommandManager _commandManager;
         private Node? _firstNode;
         private Node? _secondNode;
 
@@ -29,7 +28,7 @@ namespace SimpleFEM.Core.Tools
             IRepository<Line> lineRepository,
             IRepository<Node> nodeRepository,
             IGeometryService geometryService,
-            Commands.CommandManager commandManager)
+            ICommandManager commandManager)
         {
             _lineRepository = lineRepository;
             _nodeRepository = nodeRepository;
