@@ -1,6 +1,4 @@
-﻿using SimpleFEM.Domain.ValueObjects;
-
-namespace SimpleFEM.Domain.Entities
+﻿namespace SimpleFEM.Domain.ValueObjects
 {
     public record NodalLoad
     {
