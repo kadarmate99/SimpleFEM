@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SimpleFEM.Core/SimpleFEM.Core.csproj" Id="d4760385-41be-4838-9720-42287acb0046" />
+    <Project Path="src/SimpleFEM.Domain/SimpleFEM.Domain.csproj" Id="1f4c211d-f8c6-47fa-b31e-5990438c6631" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SimpleFEM.Core.Tests/SimpleFEM.Core.Tests.csproj" Id="5f00089e-e68d-4415-870f-08af4a77b230" />
+  </Folder>
+</Solution>
