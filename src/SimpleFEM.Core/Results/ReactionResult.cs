@@ -1,4 +1,8 @@
 ﻿namespace SimpleFEM.Core.Results
 {
-    public record ReactionResult(Guid SupportId, double Rx, double Ry);
+    public record ReactionResult(
+        int NodeId,
+        double Rx,
+        double Ry,
+        double Mz);
 }

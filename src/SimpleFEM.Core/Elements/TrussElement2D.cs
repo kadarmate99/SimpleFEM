@@ -1,81 +1,56 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
-using SimpleFEM.Domain.Entities;
+using SimpleFEM.Core.Domain;
+using SimpleFEM.Core.Results;
 
 namespace SimpleFEM.Core.Elements
 {
-    public class TrussElement2D
+    public class TrussElement2D : ILineElement
     {
-        private Matrix<double>? _localStiffnessMatrix;
-        private Matrix<double>? _globalStiffnessMatrix;
-
-        public Node Start { get; }
-        public Node End { get; }
-        public Material Material { get; }
-        public Section Section { get; }
-
-        /// <summary>Unit direction vector from Start to End in global coordinates.</summary>
-        public Vector<double> Direction { get; }
-
-        /// <summary>Element length in metres (m).</summary>
-        public double L { get; }
-
-        /// <summary>Axial rigidity in Newtons (N).</summary>
-        public double EA { get; }
-
-
-        public TrussElement2D(Node start, Node end, Material material, Section section)
-        {
-            ArgumentNullException.ThrowIfNull(start);
-            ArgumentNullException.ThrowIfNull(end);
-            ArgumentNullException.ThrowIfNull(material);
-            ArgumentNullException.ThrowIfNull(section);
-
-            double dx = end.Position.X - start.Position.X;
-            double dy = end.Position.Y - start.Position.Y;
-
-            double length = Math.Sqrt(dx * dx + dy * dy);
-
-            if (length == 0.0)
-                throw new ArgumentException(
-                    "Start and end nodes must be different. Element length = 0.",
-                    nameof(end));
-
-            Start = start;
-            End = end;
-            Material = material;
-            Section = section;
-            L = length;
-            EA = material.E * section.A;
-            Direction = Vector<double>.Build.DenseOfArray(
+        public int Id { get; }
+        public int NodeI { get; }
+        public int NodeJ { get; }
+        public int MaterialId { get; }
+        public int SectionId { get; }
+        public IReadOnlyList<Dof> GlobalDofs =>
             [
-                dx / length,
-                dy / length
-            ]);
+                new Dof(NodeI, DofType.Ux), new Dof(NodeI, DofType.Uy),
+                new Dof(NodeJ, DofType.Ux), new Dof(NodeJ, DofType.Uy),
+            ];
+
+        public TrussElement2D(int id, int nodeI, int nodeJ, int materialId, int sectionId)
+        {
+            Id = id;
+            NodeI = nodeI;
+            NodeJ = nodeJ;
+            MaterialId = materialId;
+            SectionId = sectionId;
         }
 
-        /// <summary>4×4 element stiffness matrix in local coordinates.</summary>
-        public Matrix<double> LocalStiffnessMatrix
+        public Matrix<double> ComputeGlobalStiffnessMatrix(
+            Node nodeI, Node nodeJ, Material material, CrossSection section)
         {
-            get
-            {
-                _localStiffnessMatrix ??= ComputeLocalStiffnessMatrix();
-                return _localStiffnessMatrix;
-            }
+            var kLoc = ComputeLocalStiffnessMatrix(nodeI, nodeJ, material, section);
+            var transform = ComputeTransformationMatrix(nodeI, nodeJ);
+
+            return transform.Transpose() * kLoc * transform;
         }
 
-        /// <summary>4×4 element stiffness matrix in global coordinates.</summary>
-        public Matrix<double> GlobalStiffnessMatrix
+        public ElementInternalForceResult ComputeInternalForces(
+                    Node nodeI, Node nodeJ, Material material, CrossSection section,
+                    Vector<double> elementDisplacementsGlobal)
         {
-            get
-            {
-                _globalStiffnessMatrix ??= ComputeGlobalStiffnessMatrix();
-                return _globalStiffnessMatrix;
-            }
+            var transform = ComputeTransformationMatrix(nodeI, nodeJ);
+            var uBar = transform * elementDisplacementsGlobal;
+            double k = material.E * section.A / Length(nodeI, nodeJ);
+            double N = k * (uBar[2] - uBar[0]); // tension positive
+            return new ElementInternalForceResult(Id, N, 0, 0);
         }
 
-        private Matrix<double> ComputeLocalStiffnessMatrix()
+        private Matrix<double> ComputeLocalStiffnessMatrix(
+            Node nodeI, Node nodeJ, Material material, CrossSection section)
         {
-            double k = EA / L;
+
+            double k = material.E * section.A / Length(nodeI, nodeJ);
 
             return Matrix<double>.Build.DenseOfArray(new double[,]
             {
@@ -86,20 +61,32 @@ namespace SimpleFEM.Core.Elements
             });
         }
 
-        private Matrix<double> ComputeGlobalStiffnessMatrix()
+        private Matrix<double> ComputeTransformationMatrix(Node nodeI, Node nodeJ)
         {
-            var c = Direction[0];
-            var s = Direction[1];
+            (double c, double s) = DirectionCosines(nodeI, nodeJ);
 
-            var T = Matrix<double>.Build.DenseOfArray(new double[,]
+            return Matrix<double>.Build.DenseOfArray(new double[,]
             {
                 { c, s, 0, 0 },
                 { -s, c, 0, 0 },
                 { 0, 0, c, s },
                 { 0, 0, -s, c }
             });
+        }
 
-            return T.Transpose() * LocalStiffnessMatrix * T;
+        private double Length(Node nodeI, Node nodeJ)
+        {
+            double dx = nodeJ.X - nodeI.X;
+            double dy = nodeJ.Y - nodeI.Y;
+            return Math.Sqrt(dx * dx + dy * dy);
+        }
+
+        private (double c, double s) DirectionCosines(Node nodeI, Node nodeJ)
+        {
+            double length = Length(nodeI, nodeJ);
+            double dx = nodeJ.X - nodeI.X;
+            double dy = nodeJ.Y - nodeI.Y;
+            return (dx / length, dy / length);
         }
     }
 }

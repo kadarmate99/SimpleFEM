@@ -1,4 +1,4 @@
-﻿namespace SimpleFEM.Domain.Exceptions
+﻿namespace SimpleFEM.Core.Exceptions
 {
     public sealed class InvalidStructureException : DomainException
     {

@@ -1,4 +1,4 @@
-﻿namespace SimpleFEM.Domain.Exceptions
+﻿namespace SimpleFEM.Core.Exceptions
 {
     public abstract class DomainException : Exception
     {

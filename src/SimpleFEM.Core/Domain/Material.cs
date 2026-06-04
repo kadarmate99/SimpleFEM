@@ -1,19 +1,18 @@
-﻿namespace SimpleFEM.Domain.Entities
+﻿namespace SimpleFEM.Core.Domain
 {
     public class Material
     {
-        public Material(Guid id, string name, double e)
+        public Material(int id, string name, double youngsModulus)
         {
-            if (id == Guid.Empty) throw new ArgumentException("Id cannot be empty.", nameof(id));
             ArgumentException.ThrowIfNullOrEmpty(name);
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(e);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(youngsModulus);
 
             Id = id;
-            E = e;
+            E = youngsModulus;
             Name = name;
         }
 
-        public Guid Id { get; }
+        public int Id { get; }
 
         public string Name { get; }
 

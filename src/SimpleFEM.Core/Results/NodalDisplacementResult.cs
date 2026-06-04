@@ -1,4 +1,8 @@
 ﻿namespace SimpleFEM.Core.Results
 {
-    public record NodalDisplacementResult(Guid NodeId, double Ux, double Uy);
+    public record NodalDisplacementResult(
+        int NodeId, 
+        double Ux,
+        double Uy,
+        double Rz);
 }

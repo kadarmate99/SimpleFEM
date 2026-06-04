@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SimpleFEM.Core\SimpleFEM.Core.csproj" />
-    <ProjectReference Include="..\..\src\SimpleFEM.Domain\SimpleFEM.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
