@@ -21,7 +21,8 @@ namespace SimpleFEM.Core.Preprocessing
 
             foreach (var restrain in restrainedDofs)
             {
-                var dofId = system.DofMap.GlobalIndexOf(restrain.Dof);
+                if (!system.DofMap.TryGetGlobalIndex(restrain.Dof, out var dofId))
+                    continue; // skipp restrain if ifs ont on an active dof
 
                 double stiffness = restrain.Restraint switch
                 {

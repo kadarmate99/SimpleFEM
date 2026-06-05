@@ -63,6 +63,9 @@ namespace SimpleFEM.Core.Preprocessing
                     $"DOF {dof} is inactive and has no global DOF index. " +
                     $"Nothing in the model provides stiffness for it", nameof(dof));
 
+        internal bool TryGetGlobalIndex(Dof dof, out int index) => 
+            _indexByDof.TryGetValue(dof, out index);
+
         internal Dof GetDof(int globalDofIndex)
         {
             return _dofsByIndex[globalDofIndex];
