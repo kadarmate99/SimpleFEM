@@ -7,7 +7,7 @@ namespace SimpleFEM.Core.Preprocessing
     {
         private readonly double _rigidSupportStiffness;
 
-        internal PenaltyMethodBoundaryConditionApplier(double rigidSupportStiffness = 1e10)
+        internal PenaltyMethodBoundaryConditionApplier(double rigidSupportStiffness = 1e13)
         {
             _rigidSupportStiffness = rigidSupportStiffness;
         }
