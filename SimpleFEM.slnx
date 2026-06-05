@@ -3,6 +3,7 @@
     <Project Path="src/SimpleFEM.Core/SimpleFEM.Core.csproj" Id="d4760385-41be-4838-9720-42287acb0046" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/IntegrationTests/SimpleFEM.Core.IntegrationTests.csproj" Id="80ca174a-e887-4717-a10a-3c1270669fef" />
     <Project Path="tests/SimpleFEM.Core.Tests/SimpleFEM.Core.Tests.csproj" Id="5f00089e-e68d-4415-870f-08af4a77b230" />
   </Folder>
 </Solution>
