@@ -8,12 +8,16 @@ namespace SimpleFEM.Core.PostProcessing
 {
     internal sealed class PostProcessor
     {
-        internal AnalysisResult Recover(FemModel model, GlobalSystem system, Vector<double> u)
+        internal AnalysisResult Recover(
+            FemModel model, 
+            GlobalDofIndexMap dofMap, 
+            GlobalSystem system, 
+            Vector<double> u)
         {
-            var nodalDisplacements = RecoverNodalDisplacements(u, system.DofMap);
+            var nodalDisplacements = RecoverNodalDisplacements(u, dofMap);
             var reactions = RecoverReactions(
-                u, system.K, system.F, system.DofMap, model.GetRestrainedDofs().ToList());
-            var elementInternalForces = RecoverElementInternalForces(u, model, system.DofMap);
+                u, system.K, system.F, dofMap, model.GetRestrainedDofs().ToList());
+            var elementInternalForces = RecoverElementInternalForces(u, model, dofMap);
 
             return new AnalysisResult(nodalDisplacements, reactions, elementInternalForces);
         }

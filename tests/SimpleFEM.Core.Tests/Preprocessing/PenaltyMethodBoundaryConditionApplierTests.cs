@@ -26,15 +26,17 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         public void ApplyBCs_K_RigidRestraint_UsesPenaltyStiffnessAtRightDiagonal()
         {
             const double penalty = 1e10;
-            var system = new Assembler().Assemble(BuildHorizontalChain());
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var system = new Assembler().Assemble(model, dofMap);
 
-            int restrainedDof = system.DofMap.GlobalIndexOf(new Dof(0, DofType.Ux));
-            int freeDof = system.DofMap.GlobalIndexOf(new Dof(1, DofType.Ux));
+            int restrainedDof = dofMap.GlobalIndexOf(new Dof(0, DofType.Ux));
+            int freeDof = dofMap.GlobalIndexOf(new Dof(1, DofType.Ux));
             double restrainedOriginalDiagonal = system.K[restrainedDof, restrainedDof];
             double freeOriginalDiagonal = system.K[freeDof, freeDof];
 
             var (k, _) = new PenaltyMethodBoundaryConditionApplier(penalty)
-                .ApplyBCs(system,
+                .ApplyBCs(system, dofMap,
                 [
                     new RestrainedDof(new Dof(0, DofType.Ux), Restraint.Rigid())
                 ]);
@@ -48,13 +50,15 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         public void ApplyBCs_K_RigidRestraint_DoesNotMutateInputSystem()
         {
             const double penalty = 1e10;
-            var system = new Assembler().Assemble(BuildHorizontalChain());
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var system = new Assembler().Assemble(model, dofMap);
 
-            int dof = system.DofMap.GlobalIndexOf(new Dof(0, DofType.Ux));
+            int dof =dofMap.GlobalIndexOf(new Dof(0, DofType.Ux));
             double original = system.K[dof, dof];
 
             var (k, _) = new PenaltyMethodBoundaryConditionApplier(penalty)
-                .ApplyBCs(system,
+                .ApplyBCs(system, dofMap,
                 [
                     new RestrainedDof(new Dof(0, DofType.Ux), Restraint.Rigid())
                 ]);
@@ -66,15 +70,17 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         public void ApplyBCs_K_ElasticRestraint_UsesItsOwnStiffnessAtRightDiagonal()
         {
             const double springStiffness = 5000;
-            var system = new Assembler().Assemble(BuildHorizontalChain());
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var system = new Assembler().Assemble(model, dofMap);
 
-            int restrainedDof = system.DofMap.GlobalIndexOf(new Dof(0, DofType.Ux));
-            int freeDof = system.DofMap.GlobalIndexOf(new Dof(1, DofType.Ux));
+            int restrainedDof = dofMap.GlobalIndexOf(new Dof(0, DofType.Ux));
+            int freeDof = dofMap.GlobalIndexOf(new Dof(1, DofType.Ux));
             double restrainedOriginalDiagonal = system.K[restrainedDof, restrainedDof];
             double freeOriginalDiagonal = system.K[freeDof, freeDof];
 
             var (k, _) = new PenaltyMethodBoundaryConditionApplier()
-                .ApplyBCs(system,
+                .ApplyBCs(system, dofMap,
                 [
                     new RestrainedDof(new Dof(0, DofType.Ux), Restraint.Elastic(springStiffness))
                 ]);
@@ -88,13 +94,15 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         public void ApplyBCs_K_ElasticRestraint_DoesNotMutateInputSystem()
         {
             const double springStiffness = 5000;
-            var system = new Assembler().Assemble(BuildHorizontalChain());
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var system = new Assembler().Assemble(model, dofMap);
 
-            int dof = system.DofMap.GlobalIndexOf(new Dof(0, DofType.Ux));
+            int dof =dofMap.GlobalIndexOf(new Dof(0, DofType.Ux));
             double originalDiagonal = system.K[dof, dof];
 
             var (k, _) = new PenaltyMethodBoundaryConditionApplier()
-                .ApplyBCs(system,
+                .ApplyBCs(system, dofMap,
                 [
                     new RestrainedDof(new Dof(0, DofType.Ux), Restraint.Elastic(springStiffness))
                 ]);
@@ -107,9 +115,12 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         {
             const double springStiffness = 5000;
 
-            var system = new Assembler().Assemble(BuildHorizontalChain());
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var system = new Assembler().Assemble(model, dofMap);
+
             var (k, _) = new PenaltyMethodBoundaryConditionApplier()
-                .ApplyBCs(system,
+                .ApplyBCs(system, dofMap,
                 [
                     new RestrainedDof(new Dof(0, DofType.Ux), Restraint.Elastic(springStiffness)),
                     new RestrainedDof(new Dof(0, DofType.Uy), Restraint.Elastic(springStiffness)),
@@ -130,9 +141,11 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         {
             const double springStiffness = 5000;
 
-            var system = new Assembler().Assemble(BuildHorizontalChain());
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var system = new Assembler().Assemble(model, dofMap);
             var (k, _) = new PenaltyMethodBoundaryConditionApplier()
-                .ApplyBCs(system,
+                .ApplyBCs(system, dofMap,
                 [
                     new RestrainedDof(new Dof(0, DofType.Ux), Restraint.Elastic(springStiffness)),
                     new RestrainedDof(new Dof(0, DofType.Uy), Restraint.Elastic(springStiffness)),
@@ -149,11 +162,13 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         {
             const double springStiffness = 5000;
 
-            var system = new Assembler().Assemble(BuildHorizontalChain());
-            
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var system = new Assembler().Assemble(model, dofMap);
+
             // BCs on inactive dofs 
             var (k, _) = new PenaltyMethodBoundaryConditionApplier()
-                .ApplyBCs(system,
+                .ApplyBCs(system, dofMap,
                 [
                     new RestrainedDof(new Dof(0, DofType.Rz), Restraint.Elastic(springStiffness)),
                     new RestrainedDof(new Dof(1, DofType.Rz), Restraint.Rigid()),

@@ -1,4 +1,5 @@
 ﻿using SimpleFEM.Core.Domain;
+using SimpleFEM.Core.Domain.Supports;
 using SimpleFEM.Core.Exceptions;
 using SimpleFEM.Core.PostProcessing;
 using SimpleFEM.Core.Preprocessing;
@@ -21,12 +22,15 @@ namespace SimpleFEM.Core.Analysis
         {
             EnsureValid(model);
 
-            var system = _assembler.Assemble(model);
-            var (K, F) = _bcApplier.ApplyBCs(system, model.GetRestrainedDofs().ToList());
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var restrainedDofs = model.GetRestrainedDofs().ToList();
 
-            var u = _solver.Solve(K, F);
+            var assembledSystem = _assembler.Assemble(model, dofMap);
+            var constrainedSystem = _bcApplier.ApplyBCs(assembledSystem, dofMap, restrainedDofs);
 
-            return _postProcessor.Recover(model, system, u);
+            var u = _solver.Solve(constrainedSystem.K, constrainedSystem.F);
+
+            return _postProcessor.Recover(model, dofMap, assembledSystem, u);
         }
 
         private void EnsureValid(FemModel model)

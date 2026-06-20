@@ -31,12 +31,13 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         [Fact]
         public void Assemble_SharedDof_AddsElementContributions()
         {
-            var system = new Assembler().Assemble(BuildHorizontalChain());
-            var map = system.DofMap;
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var system = new Assembler().Assemble(model, dofMap);
 
-            int n0 = map.GlobalIndexOf(new Dof(0, DofType.Ux));
-            int n1 = map.GlobalIndexOf(new Dof(1, DofType.Ux));
-            int n2 = map.GlobalIndexOf(new Dof(2, DofType.Ux));
+            int n0 = dofMap.GlobalIndexOf(new Dof(0, DofType.Ux));
+            int n1 = dofMap.GlobalIndexOf(new Dof(1, DofType.Ux));
+            int n2 = dofMap.GlobalIndexOf(new Dof(2, DofType.Ux));
 
             // shared DOF adds both elements 
             Assert.Equal(2 * K, system.K[n1, n1], Tolerances.Tol);
@@ -53,10 +54,11 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         [Fact]
         public void Assemble_PlacesLoadAtCorrectGlobalDof()
         {
-            var system = new Assembler().Assemble(
-                BuildHorizontalChain(new List<NodalLoad> { new(1, 7, 0, 0) }));
+            var model = BuildHorizontalChain(new List<NodalLoad> { new(1, 7, 0, 0) });
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var system = new Assembler().Assemble(model, dofMap);
 
-            int n1ux = system.DofMap.GlobalIndexOf(new Dof(1, DofType.Ux));
+            int n1ux = dofMap.GlobalIndexOf(new Dof(1, DofType.Ux));
 
             Assert.Equal(7, system.F[n1ux], Tolerances.Tol);
             Assert.Equal(7, system.F.Sum(), Tolerances.Tol); // nothing placed elsewhere
@@ -65,7 +67,9 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         [Fact]
         public void Assemble_K_IsSymmetric()
         {
-            var k = new Assembler().Assemble(BuildHorizontalChain()).K;
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var k = new Assembler().Assemble(model, dofMap).K;
 
             Assert.Equal(k.ColumnCount, k.RowCount);
 
@@ -77,7 +81,9 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         [Fact]
         public void Assemble_K_HasNonNegativeDiagonal()
         {
-            var k = new Assembler().Assemble(BuildHorizontalChain()).K;
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var k = new Assembler().Assemble(model, dofMap).K;
 
             for (int i = 0; i < k.RowCount; i++)
                 Assert.True(k[i, i] >= 0);
@@ -86,7 +92,9 @@ namespace SimpleFEM.Core.Tests.Preprocessing
         [Fact]
         public void Assemble_K_IsPositiveSemiDefinite()
         {
-            var k = new Assembler().Assemble(BuildHorizontalChain()).K;
+            var model = BuildHorizontalChain();
+            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
+            var k = new Assembler().Assemble(model, dofMap).K;
 
             // positive semidefinite =  all eigenvalues ≥ 0
             var eigenvalues = k.Evd().EigenValues.Real();

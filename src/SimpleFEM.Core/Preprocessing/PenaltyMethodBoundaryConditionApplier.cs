@@ -1,5 +1,4 @@
-﻿using MathNet.Numerics.LinearAlgebra;
-using SimpleFEM.Core.Domain.Supports;
+﻿using SimpleFEM.Core.Domain.Supports;
 
 namespace SimpleFEM.Core.Preprocessing
 {
@@ -12,8 +11,9 @@ namespace SimpleFEM.Core.Preprocessing
             _rigidSupportStiffness = rigidSupportStiffness;
         }
 
-        internal (Matrix<double> K, Vector<double> F) ApplyBCs(
+        internal GlobalSystem ApplyBCs(
             GlobalSystem system,
+            GlobalDofIndexMap dofMap,
             IReadOnlyList<RestrainedDof> restrainedDofs)
         {
             var k = system.K.Clone();
@@ -21,7 +21,7 @@ namespace SimpleFEM.Core.Preprocessing
 
             foreach (var restrain in restrainedDofs)
             {
-                if (!system.DofMap.TryGetGlobalIndex(restrain.Dof, out var dofId))
+                if (!dofMap.TryGetGlobalIndex(restrain.Dof, out var dofId))
                     continue; // skipp restrain if ifs ont on an active dof
 
                 double stiffness = restrain.Restraint switch
@@ -35,7 +35,7 @@ namespace SimpleFEM.Core.Preprocessing
                 k[dofId, dofId] += stiffness;
             }
 
-            return (k, f);
+            return new GlobalSystem(k, f);
         }
     }
 }

@@ -5,10 +5,8 @@ namespace SimpleFEM.Core.Preprocessing
 {
     internal class Assembler
     {
-        internal GlobalSystem Assemble(FemModel model)
+        internal GlobalSystem Assemble(FemModel model, GlobalDofIndexMap dofMap)
         {
-            var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
-
             var K = Matrix<double>.Build.Dense(dofMap.ActiveDofCount, dofMap.ActiveDofCount);
             foreach (var element in model.Elements)
             {
@@ -50,7 +48,7 @@ namespace SimpleFEM.Core.Preprocessing
                 }
             }
 
-            return new GlobalSystem(dofMap, K, F);
+            return new GlobalSystem(K, F);
         }
     }
 }
