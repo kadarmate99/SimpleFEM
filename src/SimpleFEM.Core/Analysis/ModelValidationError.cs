@@ -1,4 +1,3 @@
-﻿namespace SimpleFEM.Core.Analysis
-{
-    public record ModelValidationError(string Message);
-}
+﻿namespace SimpleFEM.Core.Analysis;
+
+public record ModelValidationError(string Message);

@@ -1,7 +1,6 @@
-﻿namespace SimpleFEM.Core.Tests
+﻿namespace SimpleFEM.Core.Tests;
+
+internal static class Tolerances
 {
-    internal static class Tolerances
-    {
-        public const double Tol = 1e-9;
-    }
+    public const double Tol = 1e-9;
 }

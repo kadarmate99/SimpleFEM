@@ -1,9 +1,8 @@
-﻿namespace SimpleFEM.Core.Exceptions
+﻿namespace SimpleFEM.Core.Exceptions;
+
+public sealed class InvalidStructureException : DomainException
 {
-    public sealed class InvalidStructureException : DomainException
-    {
-        /// <param name="reason">Specific rule that was violated.</param>
-        public InvalidStructureException(string reason)
-            : base($"Invalid structure: {reason}") { }
-    }
+    /// <param name="reason">Specific rule that was violated.</param>
+    public InvalidStructureException(string reason)
+        : base($"Invalid structure: {reason}") { }
 }

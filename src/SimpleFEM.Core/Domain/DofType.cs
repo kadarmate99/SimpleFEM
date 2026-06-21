@@ -1,9 +1,8 @@
-﻿namespace SimpleFEM.Core.Domain
+﻿namespace SimpleFEM.Core.Domain;
+
+public enum DofType
 {
-    public enum DofType
-    {
-        Ux,
-        Uy,
-        Rz
-    }
+    Ux,
+    Uy,
+    Rz
 }
