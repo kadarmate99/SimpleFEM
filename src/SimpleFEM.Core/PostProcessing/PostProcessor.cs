@@ -9,9 +9,9 @@ namespace SimpleFEM.Core.PostProcessing
     internal sealed class PostProcessor
     {
         internal AnalysisResult Recover(
-            FemModel model, 
-            GlobalDofIndexMap dofMap, 
-            GlobalSystem system, 
+            FemModel model,
+            GlobalDofIndexMap dofMap,
+            GlobalSystem system,
             Vector<double> u)
         {
             var nodalDisplacements = RecoverNodalDisplacements(u, dofMap);
@@ -24,53 +24,14 @@ namespace SimpleFEM.Core.PostProcessing
 
         private List<NodalDisplacementResult> RecoverNodalDisplacements(Vector<double> u, GlobalDofIndexMap dofMap)
         {
-            var nodalDisplacements = new List<NodalDisplacementResult>();
-
-            var displacementsByNodeId = new Dictionary<int, HashSet<DofValue>>();
-            for (int i = 0; i < u.Count; i++)
-            {
-                var dof = dofMap.GetDof(i);
-
-                if (!displacementsByNodeId.TryGetValue(dof.NodeId, out var displacements))
-                {
-                    displacements = new HashSet<DofValue>();
-                    displacementsByNodeId[dof.NodeId] = displacements;
-                }
-                displacements.Add(new DofValue(dof, u[i]));
-            }
-
-            foreach (var node in displacementsByNodeId)
-            {
-                double uX = 0;
-                double uY = 0;
-                double rZ = 0;
-
-                foreach (var displacement in node.Value)
-                {
-                    switch (displacement.Dof.Type)
-                    {
-                        case DofType.Ux:
-                            uX = displacement.Value;
-                            break;
-
-                        case DofType.Uy:
-                            uY = displacement.Value;
-                            break;
-
-                        case DofType.Rz:
-                            rZ = displacement.Value;
-                            break;
-
-                        default:
-                            throw new IndexOutOfRangeException(
-                                $"Unexpected DOF type {displacement.Dof.Type}");
-                    }
-                }
-
-                nodalDisplacements.Add(new NodalDisplacementResult(node.Key, uX, uY, rZ));
-            }
-
-            return nodalDisplacements;
+            return BuildNodalResults(
+                u,
+                dofMap,
+                // calc displacements for all active nodes.
+                // u vector can contain only active nodes, so no filtering is needed
+                includeNode: (int nodeId) => true,
+                createResult: (int nodeId, double ux, double uy, double rz)
+                                => new NodalDisplacementResult(nodeId, ux, uy, rz));
         }
 
         private List<ReactionResult> RecoverReactions(
@@ -81,63 +42,14 @@ namespace SimpleFEM.Core.PostProcessing
             IReadOnlyList<RestrainedDof> restrainedDofs)
         {
             var globalReactions = globalStiffness * globalDisplacements - globalLoads;
-
             var restrainedNodeIds = restrainedDofs.Select(r => r.Dof.NodeId).ToHashSet();
 
-
-
-
-            var reactionResults = new List<ReactionResult>();
-
-            var reactionsByNodeId = new Dictionary<int, HashSet<DofValue>>();
-            for (int i = 0; i < globalReactions.Count; i++)
-            {
-                var dof = dofMap.GetDof(i);
-
-                if (!restrainedNodeIds.Contains(dof.NodeId))
-                    continue; // free node, cant have a reaction
-
-                if (!reactionsByNodeId.TryGetValue(dof.NodeId, out var reactions))
-                {
-                    reactions = new HashSet<DofValue>();
-                    reactionsByNodeId[dof.NodeId] = reactions;
-                }
-                reactions.Add(new DofValue(dof, globalReactions[i]));
-            }
-
-
-            foreach (var node in reactionsByNodeId)
-            {
-                double rX = 0;
-                double rY = 0;
-                double mZ = 0;
-
-                foreach (var reaction in node.Value)
-                {
-                    switch (reaction.Dof.Type)
-                    {
-                        case DofType.Ux:
-                            rX = reaction.Value;
-                            break;
-
-                        case DofType.Uy:
-                            rY = reaction.Value;
-                            break;
-
-                        case DofType.Rz:
-                            mZ = reaction.Value;
-                            break;
-
-                        default:
-                            throw new IndexOutOfRangeException(
-                                $"Unexpected DOF type {reaction.Dof.Type}");
-                    }
-                }
-
-                reactionResults.Add(new ReactionResult(node.Key, rX, rY, mZ));
-            }
-
-            return reactionResults;
+            return BuildNodalResults(
+                globalReactions,
+                dofMap,
+                includeNode: (nodeId) => (restrainedNodeIds.Contains(nodeId)),
+                createResult: (nodeId, rx, ry, mz)
+                                => new ReactionResult(nodeId, rx, ry, mz));
         }
 
         private List<ElementInternalForceResult> RecoverElementInternalForces(
@@ -169,6 +81,42 @@ namespace SimpleFEM.Core.PostProcessing
             }
 
             return elementForces;
+        }
+
+        private List<TResult> BuildNodalResults<TResult>(
+            Vector<double> values,
+            GlobalDofIndexMap dofMap,
+            Func<int, bool> includeNode,
+            Func<int, double, double, double, TResult> createResult)
+        {
+            var componentsGroupedByNode = new SortedDictionary<int, Dictionary<DofType, double>>();
+            for (int i = 0; i < values.Count; i++)
+            {
+                var dof = dofMap.GetDof(i);
+                if (!includeNode(dof.NodeId))
+                    continue;
+
+                if (!componentsGroupedByNode.TryGetValue(dof.NodeId, out var valuesForNode))
+                {
+                    valuesForNode = new Dictionary<DofType, double>();
+                    componentsGroupedByNode[dof.NodeId] = valuesForNode;
+                }
+                valuesForNode.Add(dof.Type, values[i]);
+            }
+
+
+            var results = new List<TResult>();
+            foreach (var (nodeId, components) in componentsGroupedByNode)
+            {
+                results.Add(
+                    createResult(
+                        nodeId,
+                        components.GetValueOrDefault(DofType.Ux),
+                        components.GetValueOrDefault(DofType.Uy),
+                        components.GetValueOrDefault(DofType.Rz)));
+            }
+
+            return results;
         }
     }
 }
