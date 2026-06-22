@@ -7,7 +7,15 @@ internal class Assembler
 {
     internal GlobalSystem Assemble(FemModel model, GlobalDofIndexMap dofMap)
     {
-        var K = Matrix<double>.Build.Dense(dofMap.ActiveDofCount, dofMap.ActiveDofCount);
+        var globalK = BuildGlobalStiffnessMatrix(model, dofMap);
+        var globalF = BuildGlobalForceVector(model, dofMap);
+
+        return new GlobalSystem(globalK, globalF);
+    }
+
+    private Matrix<double> BuildGlobalStiffnessMatrix(FemModel model, GlobalDofIndexMap dofMap)
+    {
+        var globalK = Matrix<double>.Build.Dense(dofMap.ActiveDofCount, dofMap.ActiveDofCount);
         foreach (var element in model.Elements)
         {
             var nodeI = model.GetNode(element.NodeI);
@@ -15,7 +23,7 @@ internal class Assembler
             var material = model.GetMaterial(element.MaterialId);
             var section = model.GetSection(element.SectionId);
 
-            var kElemGlob = element.ComputeGlobalStiffnessMatrix(nodeI, nodeJ, material, section);
+            var elementK = element.ComputeGlobalStiffnessMatrix(nodeI, nodeJ, material, section);
 
             var elementDofLocalToGlobal = new int[element.GlobalDofs.Count];
             for (int i = 0; i < elementDofLocalToGlobal.Length; i++)
@@ -23,12 +31,14 @@ internal class Assembler
                 elementDofLocalToGlobal[i] = dofMap.GlobalIndexOf(element.GlobalDofs[i]);
             }
 
-            for (int i = 0; i < kElemGlob.RowCount; i++)
-                for (int j = 0; j < kElemGlob.ColumnCount; j++)
-                    K[elementDofLocalToGlobal[i], elementDofLocalToGlobal[j]] +=
-                        kElemGlob[i, j];
+            ScatterAddElementContribution(globalK, elementDofLocalToGlobal, elementK);
         }
 
+        return globalK;
+    }
+
+    private Vector<double> BuildGlobalForceVector(FemModel model, GlobalDofIndexMap dofMap)
+    {
         var F = Vector<double>.Build.Dense(dofMap.ActiveDofCount);
         foreach (var load in model.Loads)
         {
@@ -48,6 +58,17 @@ internal class Assembler
             }
         }
 
-        return new GlobalSystem(K, F);
+        return F;
+    }
+
+    private void ScatterAddElementContribution(
+        Matrix<double> globalK,
+        int[] elementDofLocalToGlobal,
+        Matrix<double> elementK)
+    {
+        for (int i = 0; i < elementK.RowCount; i++)
+            for (int j = 0; j < elementK.ColumnCount; j++)
+                globalK[elementDofLocalToGlobal[i], elementDofLocalToGlobal[j]] +=
+                    elementK[i, j];
     }
 }
