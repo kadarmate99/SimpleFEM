@@ -1,5 +1,4 @@
 ﻿using SimpleFEM.Core.Domain;
-using SimpleFEM.Core.Domain.Supports;
 using SimpleFEM.Core.Exceptions;
 using SimpleFEM.Core.PostProcessing;
 using SimpleFEM.Core.Preprocessing;
@@ -15,6 +14,21 @@ public class FemAnalysis
     private readonly PenaltyMethodBoundaryConditionApplier _bcApplier = new();
     private readonly PostProcessor _postProcessor = new();
     private readonly ILinearSolver _solver = new DenseLinearSolver();
+
+    /// <summary>Creates a FEM analyzer with the default options.</summary>
+    public FemAnalysis() :this(new FemAnalysisOptions()) { }
+    
+    /// <summary>Creates a FEM analyzer with the provided options.</summary>
+    public FemAnalysis(FemAnalysisOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        _validator = new ModelValidator();
+        _assembler = new Assembler();
+        _bcApplier = new PenaltyMethodBoundaryConditionApplier(options.RigidSupportStiffness);
+        _postProcessor = new PostProcessor();
+        _solver = new DenseLinearSolver();
+    }
 
     public ModelValidationResult Validate(FemModel model) => _validator.Validate(model);
 
