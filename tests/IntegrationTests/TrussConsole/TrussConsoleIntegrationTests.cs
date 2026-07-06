@@ -46,7 +46,7 @@ public class TrussConsoleTests
             new(SecShs150, "SHS 150x5", AreaShs150),
         };
 
-        var elements = new List<ILineElement>
+        var elements = new List<Element>
         {
             new TrussElement2D(1,  2, 4, MatS355, SecShs150),
             new TrussElement2D(2,  3, 5, MatS355, SecShs150),

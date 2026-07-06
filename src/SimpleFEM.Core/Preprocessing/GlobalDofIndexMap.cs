@@ -10,7 +10,7 @@ internal class GlobalDofIndexMap
     private readonly Dictionary<Dof, int> _indexByDof = [];
     private readonly List<Dof> _dofsByIndex = [];
 
-    internal GlobalDofIndexMap(IReadOnlyList<Node> nodes, IEnumerable<ILineElement> elements)
+    internal GlobalDofIndexMap(IReadOnlyList<Node> nodes, IEnumerable<Element> elements)
     {
         // inactive DOFs are excluded:
         // an inactive DOF is not relevant in the system because nothing in the model provides

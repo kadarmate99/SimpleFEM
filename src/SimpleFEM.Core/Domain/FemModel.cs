@@ -10,7 +10,7 @@ public sealed class FemModel
     public IReadOnlyList<Node> Nodes { get; }
     public IReadOnlyList<Material> Materials { get; }
     public IReadOnlyList<CrossSection> Sections { get; }
-    public IReadOnlyList<ILineElement> Elements { get; }
+    public IReadOnlyList<Element> Elements { get; }
     public IReadOnlyList<NodalLoad> Loads { get; }
     public IReadOnlyList<Support> Supports { get; }
 
@@ -22,7 +22,7 @@ public sealed class FemModel
         IReadOnlyList<Node> nodes,
         IReadOnlyList<Material> materials,
         IReadOnlyList<CrossSection> sections,
-        IReadOnlyList<ILineElement> elements,
+        IReadOnlyList<Element> elements,
         IReadOnlyList<NodalLoad> loads,
         IReadOnlyList<Support> supports)
     {
@@ -55,4 +55,16 @@ public sealed class FemModel
 
     internal IEnumerable<RestrainedDof> GetRestrainedDofs()
         => Supports.SelectMany(s => s.GetRestrainedDofs());
+
+    internal ElementContext Resolve(Element element)
+    {
+        var nodes = new Node[element.NodeIds.Count];
+        for (int i = 0; i < nodes.Length; i++)
+            nodes[i] = GetNode(element.NodeIds[i]);
+
+        return new ElementContext(
+            nodes,
+            GetMaterial(element.MaterialId),
+            GetSection(element.SectionId));
+    }
 }

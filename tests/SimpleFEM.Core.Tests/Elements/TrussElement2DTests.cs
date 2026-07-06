@@ -1,6 +1,7 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using SimpleFEM.Core.Domain;
 using SimpleFEM.Core.Elements;
+using static System.Collections.Specialized.BitVector32;
 
 namespace SimpleFEM.Core.Tests.Elements;
 
@@ -17,9 +18,10 @@ public class TrussElement2DTests
         var section = new CrossSection(0, "A", 0.01);
 
         var element = new TrussElement2D(0, nodeI.Id, nodeJ.Id, material.Id, section.Id);
+        var context = new ElementContext([nodeI, nodeJ], material, section);
 
         // Act
-        var kg = element.ComputeGlobalStiffnessMatrix(nodeI, nodeJ, material, section);
+        var kg = element.ComputeGlobalStiffnessMatrix(context);
 
         // Assert 
         Assert.Equal(4, kg.RowCount);
@@ -36,9 +38,10 @@ public class TrussElement2DTests
         var section = new CrossSection(0, "A", 0.01);
 
         var element = new TrussElement2D(0, nodeI.Id, nodeJ.Id, material.Id, section.Id);
+        var context = new ElementContext([nodeI, nodeJ], material, section);
 
         // Act
-        var kg = element.ComputeGlobalStiffnessMatrix(nodeI, nodeJ, material, section);
+        var kg = element.ComputeGlobalStiffnessMatrix(context);
 
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 4; j++)
@@ -55,9 +58,10 @@ public class TrussElement2DTests
         var section = new CrossSection(0, "A", 0.01);
 
         var element = new TrussElement2D(0, nodeI.Id, nodeJ.Id, material.Id, section.Id);
+        var context = new ElementContext([nodeI, nodeJ], material, section);
 
         // Act
-        var kg = element.ComputeGlobalStiffnessMatrix(nodeI, nodeJ, material, section);
+        var kg = element.ComputeGlobalStiffnessMatrix(context);
 
         for (int i = 0; i < 4; i++)
         {
@@ -105,9 +109,10 @@ public class TrussElement2DTests
         var section = new CrossSection(0, "A", A);
 
         var element = new TrussElement2D(0, nodeI.Id, nodeJ.Id, material.Id, section.Id);
+        var context = new ElementContext([nodeI, nodeJ], material, section);
 
         // Act
-        var kg = element.ComputeGlobalStiffnessMatrix(nodeI, nodeJ, material, section);
+        var kg = element.ComputeGlobalStiffnessMatrix(context);
 
         // Assert
         for (int i = 0; i < 4; i++)
@@ -125,11 +130,15 @@ public class TrussElement2DTests
         var section = new CrossSection(0, "A", 0.01);
 
         var forward = new TrussElement2D(0, a.Id, b.Id, material.Id, section.Id);
+        var forwardContext = new ElementContext([a, b], material, section);
+
         var reversed = new TrussElement2D(0, b.Id, a.Id, material.Id, section.Id);
+        var reversedContext = new ElementContext([b, a], material, section);
+
 
         // Act
-        var kgF = forward.ComputeGlobalStiffnessMatrix(a, b, material, section);
-        var kgR = reversed.ComputeGlobalStiffnessMatrix(b, a, material, section);
+        var kgF = forward.ComputeGlobalStiffnessMatrix(forwardContext);
+        var kgR = reversed.ComputeGlobalStiffnessMatrix(reversedContext);
 
         // Assert
         for (int i = 0; i < 4; i++)
@@ -148,6 +157,7 @@ public class TrussElement2DTests
         var nodeJ = new Node(1, 3, 4);  // L = 5
         var mat = new Material(0, "m", 100); var sec = new CrossSection(0, "a", 1.0); // k = EA/L = 20
         var el = new TrussElement2D(0, 0, 1, 0, 0);
+        var context = new ElementContext([nodeI, nodeJ], mat, sec);
 
         var dx = nodeJ.X - nodeI.X;
         var dy = nodeJ.Y - nodeI.Y;
@@ -157,7 +167,7 @@ public class TrussElement2DTests
 
         var u = Vector<double>.Build.DenseOfArray([0.0, 0.0, c * elongation, s * elongation]);
 
-        var result = el.ComputeInternalForces(nodeI, nodeJ, mat, sec, u);
+        var result = el.ComputeInternalForces(context, u);
 
         Assert.Equal(expectedN, result.N, Tolerances.Tol);  // N = k*elongation = 20*0.1 = 2
     }
@@ -178,6 +188,8 @@ public class TrussElement2DTests
         var nodeI = new Node(0, x1, y1);
         var nodeJ = new Node(1, x2, y2);
 
+        var context = new ElementContext([nodeI, nodeJ], mat, sec);
+
         var dx = x2 - x1;
         var dy = y2 - y1;
         var L = Math.Sqrt(dx * dx + dy * dy);
@@ -189,7 +201,7 @@ public class TrussElement2DTests
 
         var u = Vector<double>.Build.DenseOfArray([0.0, 0.0, c * elongation, s * elongation]);
 
-        var result = el.ComputeInternalForces(nodeI, nodeJ, mat, sec, u);
+        var result = el.ComputeInternalForces(context, u);
 
         Assert.Equal(f, result.N, Tolerances.Tol);
         Assert.Equal(0, result.V, Tolerances.Tol);
@@ -206,11 +218,13 @@ public class TrussElement2DTests
 
         var nodeI = new Node(0, 0, 0);
         var nodeJ = new Node(3, 4, 0);
+        var context = new ElementContext([nodeI, nodeJ], mat, sec);
+        var contextReversed = new ElementContext([nodeJ, nodeI], mat, sec);
 
         var u = Vector<double>.Build.DenseOfArray([0.0, 0.0, 0.6, 0.8]);
 
-        var f1 = el.ComputeInternalForces(nodeI, nodeJ, mat, sec, u);
-        var f2 = el.ComputeInternalForces(nodeJ, nodeI, mat, sec, u);
+        var f1 = el.ComputeInternalForces(context, u);
+        var f2 = el.ComputeInternalForces(contextReversed, u);
 
         Assert.Equal(f1.N, -f2.N, 1e-9);
     }
@@ -224,17 +238,18 @@ public class TrussElement2DTests
         var mat = new Material(0, "m", 100); var sec = new CrossSection(0, "a", 1.0);
         var el = new TrussElement2D(0, 0, 1, 0, 0);
         var nodeI = new Node(0, x1, y1); var nodeJ = new Node(1, x2, y2);
+        var context = new ElementContext([nodeI, nodeJ], mat, sec);
         var (dx, dy) = (x2 - x1, y2 - y1); var L = Math.Sqrt(dx * dx + dy * dy);
         var (c, s) = (dx / L, dy / L);
 
         // J moved perpendicular to the axis
         var transverse = Vector<double>.Build.DenseOfArray([0, 0, -s * 0.3, c * 0.3]);
-        var result1 = el.ComputeInternalForces(nodeI, nodeJ, mat, sec, transverse);
+        var result1 = el.ComputeInternalForces(context, transverse);
         Assert.Equal(0, result1.N, Tolerances.Tol);
 
         // brigid body movement
         var rigid = Vector<double>.Build.DenseOfArray([0.7, -0.4, 0.7, -0.4]);
-        var result2 = el.ComputeInternalForces(nodeI, nodeJ, mat, sec, rigid);
+        var result2 = el.ComputeInternalForces(context, rigid);
         Assert.Equal(0, result2.N, Tolerances.Tol);
     }
     #endregion

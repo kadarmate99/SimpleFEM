@@ -13,7 +13,7 @@ public class PenaltyMethodBoundaryConditionApplierTests
             new List<Node> { new(0, 0, 0), new(1, 1, 0), new(2, 2, 0) },
             new List<Material> { new(0, "m", 100) },
             new List<CrossSection> { new(0, "a", 1.0) },
-            new List<ILineElement>
+            new List<Element>
             {
                 new TrussElement2D(0, 0, 1, 0, 0),
                 new TrussElement2D(1, 1, 2, 0, 0),

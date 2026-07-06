@@ -18,12 +18,8 @@ internal class Assembler
         var globalK = Matrix<double>.Build.Dense(dofMap.ActiveDofCount, dofMap.ActiveDofCount);
         foreach (var element in model.Elements)
         {
-            var nodeI = model.GetNode(element.NodeI);
-            var nodeJ = model.GetNode(element.NodeJ);
-            var material = model.GetMaterial(element.MaterialId);
-            var section = model.GetSection(element.SectionId);
-
-            var elementK = element.ComputeGlobalStiffnessMatrix(nodeI, nodeJ, material, section);
+            var context = model.Resolve(element);
+            var elementK = element.ComputeGlobalStiffnessMatrix(context);
 
             var elementDofLocalToGlobal = new int[element.GlobalDofs.Count];
             for (int i = 0; i < elementDofLocalToGlobal.Length; i++)

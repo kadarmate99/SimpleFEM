@@ -62,11 +62,6 @@ internal sealed class PostProcessor
 
         foreach (var element in model.Elements)
         {
-            var nodeI = model.GetNode(element.NodeI);
-            var nodeJ = model.GetNode(element.NodeJ);
-            var material = model.GetMaterial(element.MaterialId);
-            var section = model.GetSection(element.SectionId);
-
             var elementDisplacementsGlobal = Vector<double>.Build.Dense(element.GlobalDofs.Count);
             for (int i = 0; i < element.GlobalDofs.Count; i++)
             {
@@ -76,8 +71,9 @@ internal sealed class PostProcessor
                 elementDisplacementsGlobal[i] = globalDisplacements[dofId];
             }
 
+            var context = model.Resolve(element);
             elementForces.Add(
-                element.ComputeInternalForces(nodeI, nodeJ, material, section, elementDisplacementsGlobal));
+                element.ComputeInternalForces(context, elementDisplacementsGlobal));
         }
 
         return elementForces;

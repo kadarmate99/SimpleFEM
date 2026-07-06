@@ -20,7 +20,7 @@ public class FemAnalysisTests
         var materials = new List<Material> { new Material(0, $"testMat_{e}", e) };
         var sections = new List<CrossSection> { new CrossSection(0, $"testSec_{a}", a) };
 
-        var elements = new List<ILineElement>
+        var elements = new List<Element>
         {
             new TrussElement2D(0, 0, 1, 0, 0)
         };
@@ -106,7 +106,7 @@ public class FemAnalysisTests
         var nodes = new List<Node> { new(0, 0, 0), new(1, 6, 0), new(2, 3, 4) };
         var materials = new List<Material> { new(0, "S235", 210e9) };
         var sections = new List<CrossSection> { new(0, "A", 1e-3) };
-        var elements = new List<ILineElement>
+        var elements = new List<Element>
         {
             new TrussElement2D(0, 0, 1, 0, 0),
             new TrussElement2D(1, 0, 2, 0, 0),
@@ -137,7 +137,7 @@ public class FemAnalysisTests
         var nodes = new List<Node> { new(0, 0, 0), new(1, 6, 0), new(2, 3, 4) };
         var materials = new List<Material> { new(0, "S235", 210e9) };
         var sections = new List<CrossSection> { new(0, "A", 1e-3) };
-        var elements = new List<ILineElement>
+        var elements = new List<Element>
         {
             new TrussElement2D(0, 0, 1, 0, 0),
             new TrussElement2D(1, 0, 2, 0, 0),

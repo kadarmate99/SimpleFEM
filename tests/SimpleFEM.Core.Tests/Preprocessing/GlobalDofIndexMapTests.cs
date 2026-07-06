@@ -10,7 +10,7 @@ public class GlobalDofIndexMapTests
     public void MapsAllActiveDofsToUniqueGlobalIndices()
     {
         var nodes = new[] { new Node(0, 0, 0), new Node(1, 1, 0) };
-        var elements = new ILineElement[] { new TrussElement2D(0, 0, 1, 0, 0) };
+        var elements = new Element[] { new TrussElement2D(0, 0, 1, 0, 0) };
 
         var map = new GlobalDofIndexMap(nodes, elements);
 
@@ -35,7 +35,7 @@ public class GlobalDofIndexMapTests
     public void ExcludesUnreferencedNodes_AndThrowsForInactiveDof()
     {
         var nodes = new[] { new Node(0, 0, 0), new Node(1, 1, 0), new Node(2, 2, 0) };
-        var elements = new ILineElement[] { new TrussElement2D(0, 0, 1, 0, 0) };
+        var elements = new Element[] { new TrussElement2D(0, 0, 1, 0, 0) };
 
         var map = new GlobalDofIndexMap(nodes, elements);
 
