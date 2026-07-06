@@ -17,20 +17,14 @@ internal class PenaltyMethodBoundaryConditionApplier
         IReadOnlyList<RestrainedDof> restrainedDofs)
     {
         var k = system.K.Clone();
-        var f = system.F.Clone(); // will be relevant when implementing prescribed nodal displacment loads.
+        var f = system.F.Clone(); // will be relevant when implementing prescribed nodal displacement loads.
 
         foreach (var restrain in restrainedDofs)
         {
             if (!dofMap.TryGetGlobalIndex(restrain.Dof, out var dofId))
-                continue; // skipp restrain if ifs ont on an active dof
+                continue; // skip restraint if ifs not on an active dof
 
-            double stiffness = restrain.Restraint switch
-            {
-                RigidRestraint => _rigidSupportStiffness,
-                ElasticRestraint e => e.Stiffness,
-                _ => throw new NotSupportedException(
-                    $"Unknown restraint type {restrain.Restraint.GetType()}")
-            };
+            double stiffness = restrain.Restraint.Stiffness ?? _rigidSupportStiffness;
 
             k[dofId, dofId] += stiffness;
         }

@@ -4,18 +4,39 @@ using SimpleFEM.Core.Loads;
 
 namespace SimpleFEM.Core.Domain;
 
-public record FemModel(
-    IReadOnlyList<Node> Nodes,
-    IReadOnlyList<Material> Materials,
-    IReadOnlyList<CrossSection> Sections,
-    IReadOnlyList<ILineElement> Elements,
-    IReadOnlyList<NodalLoad> Loads,
-    IReadOnlyList<Support> Supports
-)
+
+public sealed class FemModel
 {
-    private readonly Dictionary<int, Node> _nodeById = Nodes.ToDictionary(n => n.Id);
-    private readonly Dictionary<int, Material> _materialById = Materials.ToDictionary(m => m.Id);
-    private readonly Dictionary<int, CrossSection> _sectionById = Sections.ToDictionary(s => s.Id);
+    public IReadOnlyList<Node> Nodes { get; }
+    public IReadOnlyList<Material> Materials { get; }
+    public IReadOnlyList<CrossSection> Sections { get; }
+    public IReadOnlyList<ILineElement> Elements { get; }
+    public IReadOnlyList<NodalLoad> Loads { get; }
+    public IReadOnlyList<Support> Supports { get; }
+
+    private readonly Dictionary<int, Node> _nodeById;
+    private readonly Dictionary<int, Material> _materialById;
+    private readonly Dictionary<int, CrossSection> _sectionById;
+
+    public FemModel(
+        IReadOnlyList<Node> nodes,
+        IReadOnlyList<Material> materials,
+        IReadOnlyList<CrossSection> sections,
+        IReadOnlyList<ILineElement> elements,
+        IReadOnlyList<NodalLoad> loads,
+        IReadOnlyList<Support> supports)
+    {
+        Nodes = nodes;
+        Materials = materials;
+        Sections = sections;
+        Elements = elements;
+        Loads = loads;
+        Supports = supports;
+
+        _nodeById = Nodes.ToDictionary(n => n.Id);
+        _materialById = Materials.ToDictionary(m => m.Id);
+        _sectionById = Sections.ToDictionary(s => s.Id);
+    }
 
     internal Node GetNode(int id) =>
         _nodeById.TryGetValue(id, out var n)

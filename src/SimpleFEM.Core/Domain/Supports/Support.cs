@@ -1,33 +1,36 @@
 ﻿namespace SimpleFEM.Core.Domain.Supports;
 
-public class Support
+/// <summary>
+/// Restraint per DOF direction of one node.
+/// A null restraint means the DOF is free.
+/// </summary>
+public sealed class Support
 {
-    private readonly Restraint? _ux;
-    private readonly Restraint? _uy;
-    private readonly Restraint? _rz;
+    public int NodeId { get; }
+    public Restraint? Ux { get; }
+    public Restraint? Uy { get; }
+    public Restraint? Rz { get; }
 
     public Support(int nodeId, Restraint? ux = null, Restraint? uy = null, Restraint? rz = null)
     {
         NodeId = nodeId;
-        _ux = ux;
-        _uy = uy;
-        _rz = rz;
+        Ux = ux;
+        Uy = uy;
+        Rz = rz;
     }
-
-    public int NodeId { get; }
 
     internal IEnumerable<RestrainedDof> GetRestrainedDofs()
     {
         List<RestrainedDof> restrainedDofs = [];
 
-        if (_ux is not null) 
-            restrainedDofs.Add(new RestrainedDof(new Dof(NodeId, DofType.Ux), _ux));
+        if (Ux is not null)
+            restrainedDofs.Add(new RestrainedDof(new Dof(NodeId, DofType.Ux), Ux));
 
-        if (_uy is not null) 
-            restrainedDofs.Add(new RestrainedDof(new Dof(NodeId, DofType.Uy), _uy));
+        if (Uy is not null)
+            restrainedDofs.Add(new RestrainedDof(new Dof(NodeId, DofType.Uy), Uy));
 
-        if (_rz is not null)
-            restrainedDofs.Add(new RestrainedDof(new Dof(NodeId, DofType.Rz), _rz));
+        if (Rz is not null)
+            restrainedDofs.Add(new RestrainedDof(new Dof(NodeId, DofType.Rz), Rz));
 
         return restrainedDofs;
     }

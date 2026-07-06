@@ -3,22 +3,30 @@
 /// <summary>
 /// Restraint condition on a DOF direction
 /// </summary>
-public abstract record Restraint
+public sealed record Restraint
 {
-    private protected Restraint() { }
+    private static readonly double? RigidStiffness = null;
+    
+    private Restraint(double? stiffness) => Stiffness = stiffness;
 
-    public static Restraint Rigid() => new RigidRestraint();
+    /// <summary>Spring stiffness in N/m for displacement, or Nm/rad for rotation; 
+    /// null when rigid.</summary>
+    public double? Stiffness { get; }
+
+    public bool IsRigid => Stiffness is null;
+
+    public static Restraint Rigid() => new(RigidStiffness);
 
     /// <summary>
-    /// Returns a linear elastic spring restraint with the provided spring stifness 
+    /// Returns a linear elastic spring restraint with the provided spring stiffness 
     /// </summary>
     /// <param name="stiffness">
-    /// Spring stifness in N/m for displacement, or Nm/rad for rotation
+    /// Spring stiffness in N/m for displacement, or Nm/rad for rotation
     /// </param>
     public static Restraint Elastic(double stiffness)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(stiffness);
-        return new ElasticRestraint(stiffness);
+        return new Restraint(stiffness);
     }
 }
 
