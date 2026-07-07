@@ -4,16 +4,20 @@ using SimpleFEM.Core.PostProcessing;
 using SimpleFEM.Core.Preprocessing;
 using SimpleFEM.Core.Results;
 using SimpleFEM.Core.Solver;
+using SimpleFEM.Core.Validation;
+using SimpleFEM.Core.Validation.Model;
+using SimpleFEM.Core.Validation.Result;
 
 namespace SimpleFEM.Core.Analysis;
 
 public class FemAnalysis
 {
-    private readonly ModelValidator _validator = new();
-    private readonly Assembler _assembler = new();
-    private readonly PenaltyMethodBoundaryConditionApplier _bcApplier = new();
-    private readonly PostProcessor _postProcessor = new();
-    private readonly ILinearSolver _solver = new DenseLinearSolver();
+    private readonly ModelValidator modelValidator;
+    private readonly ResultValidator resultValidator;
+    private readonly Assembler assembler;
+    private readonly PenaltyMethodBoundaryConditionApplier bcApplier;
+    private readonly PostProcessor postProcessor;
+    private readonly ILinearSolver solver;
 
     /// <summary>Creates a FEM analyzer with the default options.</summary>
     public FemAnalysis() :this(new FemAnalysisOptions()) { }
@@ -23,14 +27,15 @@ public class FemAnalysis
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        _validator = new ModelValidator();
-        _assembler = new Assembler();
-        _bcApplier = new PenaltyMethodBoundaryConditionApplier(options.RigidSupportStiffness);
-        _postProcessor = new PostProcessor();
-        _solver = new DenseLinearSolver();
+        modelValidator = new ModelValidator(DefaultValidationRules.Model(options));
+        resultValidator = new ResultValidator(DefaultValidationRules.Result(options));
+        assembler = new Assembler();
+        bcApplier = new PenaltyMethodBoundaryConditionApplier(options.RigidSupportStiffness);
+        postProcessor = new PostProcessor();
+        solver = new DenseLinearSolver();
     }
 
-    public ModelValidationResult Validate(FemModel model) => _validator.Validate(model);
+    public ValidationResult<ModelValidationErrorCode> Validate(FemModel model) => modelValidator.Validate(model);
 
     public AnalysisResult Run(FemModel model)
     {
@@ -39,17 +44,17 @@ public class FemAnalysis
         var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
         var restrainedDofs = model.GetRestrainedDofs().ToList();
 
-        var assembledSystem = _assembler.Assemble(model, dofMap);
-        var constrainedSystem = _bcApplier.ApplyBCs(assembledSystem, dofMap, restrainedDofs);
+        var assembledSystem = assembler.Assemble(model, dofMap);
+        var constrainedSystem = bcApplier.ApplyBCs(assembledSystem, dofMap, restrainedDofs);
 
-        var u = _solver.Solve(constrainedSystem.K, constrainedSystem.F);
+        var u = solver.Solve(constrainedSystem.K, constrainedSystem.F);
 
-        return _postProcessor.Recover(model, dofMap, assembledSystem, u);
+        return postProcessor.Recover(model, dofMap, assembledSystem, u);
     }
 
     private void EnsureValid(FemModel model)
     {
-        var validation = _validator.Validate(model);
+        var validation = modelValidator.Validate(model);
         if (!validation.IsValid)
             throw new InvalidStructureException(
                 string.Join("; ", validation.Errors.Select(e => e.Message)));

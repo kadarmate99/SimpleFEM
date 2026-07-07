@@ -4,7 +4,7 @@
 /// Restraint per DOF direction of one node.
 /// A null restraint means the DOF is free.
 /// </summary>
-public sealed class Support
+public sealed record Support
 {
     public int NodeId { get; }
     public Restraint? Ux { get; }
@@ -13,6 +13,9 @@ public sealed class Support
 
     public Support(int nodeId, Restraint? ux = null, Restraint? uy = null, Restraint? rz = null)
     {
+        if (ux is null && uy is null && rz is null)
+            throw new ArgumentException("A support must restrain at least one DOF.");
+
         NodeId = nodeId;
         Ux = ux;
         Uy = uy;

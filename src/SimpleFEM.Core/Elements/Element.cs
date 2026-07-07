@@ -11,6 +11,9 @@ public abstract class Element
 {
     private protected Element(int id, IReadOnlyList<int> nodeIds, int materialId, int sectionId)
     {
+        if (nodeIds.Distinct().Count() != nodeIds.Count)
+            throw new ArgumentException("An element's node ids must be distinct.");
+
         Id = id;
         NodeIds = nodeIds;
         MaterialId = materialId;

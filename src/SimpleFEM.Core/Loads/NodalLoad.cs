@@ -2,12 +2,27 @@
 
 namespace SimpleFEM.Core.Loads;
 
-public record NodalLoad(
-    int NodeId,
-    double Fx,
-    double Fy,
-    double Mz)
+public record NodalLoad
 {
+    public int NodeId { get; }
+    public double Fx { get; }
+    public double Fy { get; }
+    public double Mz { get; }
+    public NodalLoad(
+        int nodeId,
+        double fx,
+        double fy,
+        double mz)
+    {
+        if (fx == 0 && fy == 0 && mz == 0)
+            throw new ArgumentException("A nodal load must contain at least one load value.");
+
+        NodeId = nodeId;
+        Fx = fx;
+        Fy = fy;
+        Mz = mz;
+    }
+
     internal IEnumerable<DofValue> GetLoadsOnDofs()
     {
         var loadsOnDofs = new List<DofValue>();
