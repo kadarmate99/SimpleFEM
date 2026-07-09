@@ -81,7 +81,7 @@ public class TrussConsoleTests
     [Fact]
     public void Run_TrussConsole_NodalDisplacements_MatchReference()
     {
-        var result = new FemAnalysis().Run(BuildTrussConsoleModel());
+        var result = new FemAnalysis().Run(BuildTrussConsoleModel()).EnsureValid();
 
         // in mm
         var expected = new (int NodeId, double UxMm, double UyMm)[]
@@ -107,7 +107,7 @@ public class TrussConsoleTests
     [Fact]
     public void Run_TrussConsole_AxialForces_MatchReference()
     {
-        var result = new FemAnalysis().Run(BuildTrussConsoleModel());
+        var result = new FemAnalysis().Run(BuildTrussConsoleModel()).EnsureValid();
 
         // in N
         var fExpected = new (int ElementId, double N)[]
@@ -138,7 +138,7 @@ public class TrussConsoleTests
     [Fact]
     public void Run_TrussConsole_Reactions_MatchReference()
     {
-        var result = new FemAnalysis().Run(BuildTrussConsoleModel());
+        var result = new FemAnalysis().Run(BuildTrussConsoleModel()).EnsureValid();
 
         var r1 = result.Reactions.Single(r => r.NodeId == 1);
         Assert.Equal(290 * 1000, r1.Rx, ForceTolN);

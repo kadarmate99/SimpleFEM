@@ -2,11 +2,9 @@
 
 public sealed class ValidationResult<TErrorCode> where TErrorCode : struct, Enum
 {
-    private readonly List<ValidationError<TErrorCode>> errors = new();
-    public IReadOnlyList<ValidationError<TErrorCode>> Errors => errors;
+    public IReadOnlyList<ValidationError<TErrorCode>> Errors { get; }
+    public bool IsValid => Errors.Count == 0;
 
-    public bool IsValid => !errors.Any();
-
-    public void Add(ValidationError<TErrorCode> error) => errors.Add(error);
-    public void AddRange(IEnumerable<ValidationError<TErrorCode>> errors) => this.errors.AddRange(errors);
+    public ValidationResult(IEnumerable<ValidationError<TErrorCode>>? errors = null)
+        => Errors = errors?.ToArray() ?? [];
 }

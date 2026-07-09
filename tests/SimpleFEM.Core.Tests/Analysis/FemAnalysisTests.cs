@@ -50,7 +50,7 @@ public class FemAnalysisTests
         var model = BuildVerticalTrussModel(210_000_000_000, 1, 5);
         var elementId = 0;
 
-        var result = new FemAnalysis().Run(model);
+        var result = new FemAnalysis().Run(model).EnsureValid();
 
         var f0 = result.ElementInternalForces.Single(f => f.ElementId == elementId);
         Assert.Equal(-10, f0.N, Tolerances.Tol);
@@ -66,7 +66,7 @@ public class FemAnalysisTests
         double l = 5;
         var model = BuildVerticalTrussModel(e, a, l);
 
-        var result = new FemAnalysis().Run(model);
+        var result = new FemAnalysis().Run(model).EnsureValid();
 
         var d0 = result.NodalDisplacements.Single(d => d.NodeId == 0);
         Assert.Equal(0, d0.Ux, Tolerances.Tol);
@@ -85,7 +85,7 @@ public class FemAnalysisTests
     {
         var model = BuildVerticalTrussModel(210_000_000_000, 1, 5);
 
-        var result = new FemAnalysis().Run(model);
+        var result = new FemAnalysis().Run(model).EnsureValid();
 
         // node 0: Fy = 1 - 10 = -9; R = -F
         var r0 = result.Reactions.Single(r => r.NodeId == 0);
@@ -120,7 +120,7 @@ public class FemAnalysisTests
         };
         var model = new FemModel(nodes, materials, sections, elements, loads, supports);
 
-        var result = new FemAnalysis().Run(model);
+        var result = new FemAnalysis().Run(model).EnsureValid();
 
         Assert.Multiple(
             () => Assert.Equal(5, result.Reactions.Single(r => r.NodeId == 0).Ry, Tolerances.Tol),
@@ -151,7 +151,7 @@ public class FemAnalysisTests
         };
         var model = new FemModel(nodes, materials, sections, elements, loads, supports);
 
-        var result = new FemAnalysis().Run(model);
+        var result = new FemAnalysis().Run(model).EnsureValid();
 
         // node 2 has no support
         Assert.DoesNotContain(result.Reactions, r => r.NodeId == 2);

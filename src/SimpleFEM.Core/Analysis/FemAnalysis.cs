@@ -20,8 +20,8 @@ public class FemAnalysis
     private readonly ILinearSolver solver;
 
     /// <summary>Creates a FEM analyzer with the default options.</summary>
-    public FemAnalysis() :this(new FemAnalysisOptions()) { }
-    
+    public FemAnalysis() : this(new FemAnalysisOptions()) { }
+
     /// <summary>Creates a FEM analyzer with the provided options.</summary>
     public FemAnalysis(FemAnalysisOptions options)
     {
@@ -35,11 +35,27 @@ public class FemAnalysis
         solver = new DenseLinearSolver();
     }
 
-    public ValidationResult<ModelValidationErrorCode> Validate(FemModel model) => modelValidator.Validate(model);
-
-    public AnalysisResult Run(FemModel model)
+    public ValidationResult<ModelValidationErrorCode> Validate(FemModel model)
     {
-        EnsureValid(model);
+        ArgumentNullException.ThrowIfNull(model);
+
+        return modelValidator.Validate(model);
+    }
+
+    /// <summary>
+    /// Runs the analysis. 
+    /// Before starting the analysis validates <paramref name="model"/> 
+    /// and throws <see cref="InvalidModelException"/> if it is invalid.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"><paramref name="model"/> is null.</exception>
+    /// <exception cref="InvalidModelException">The model failed pre-run validation.</exception>
+    public AnalysisOutcome Run(FemModel model)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+
+        var modelValidation = modelValidator.Validate(model);
+        if (!modelValidation.IsValid)
+            throw new InvalidModelException(modelValidation, model, nameof(model));
 
         var dofMap = new GlobalDofIndexMap(model.Nodes, model.Elements);
         var restrainedDofs = model.GetRestrainedDofs().ToList();
@@ -49,14 +65,9 @@ public class FemAnalysis
 
         var u = solver.Solve(constrainedSystem.K, constrainedSystem.F);
 
-        return postProcessor.Recover(model, dofMap, assembledSystem, u);
-    }
+        var result = postProcessor.Recover(model, dofMap, assembledSystem, u);
 
-    private void EnsureValid(FemModel model)
-    {
-        var validation = modelValidator.Validate(model);
-        if (!validation.IsValid)
-            throw new InvalidStructureException(
-                string.Join("; ", validation.Errors.Select(e => e.Message)));
+        var resultValidation = resultValidator.Validate(model, result);
+        return new AnalysisOutcome(result, resultValidation);
     }
 }
