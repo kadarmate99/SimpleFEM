@@ -2,7 +2,10 @@
 using SimpleFEM.Core.Domain;
 using SimpleFEM.Core.Domain.Supports;
 using SimpleFEM.Core.Elements;
+using SimpleFEM.Core.Exceptions;
 using SimpleFEM.Core.Loads;
+using SimpleFEM.Core.Tests.Validation;
+using SimpleFEM.Core.Validation.Model;
 
 namespace SimpleFEM.Core.Tests.Analysis;
 
@@ -156,5 +159,46 @@ public class FemAnalysisTests
         // node 2 has no support
         Assert.DoesNotContain(result.Reactions, r => r.NodeId == 2);
     }
-}
 
+
+    [Fact]
+    public void Run_InvalidModel_ThrowsInvalidModelExceptionCarryingValidation()
+    {
+        // load references a missing node (ReferenceIntegrity).
+        var model = ModelBuilder.Build(loads: [new NodalLoad(99, 10, 0, 0)]);
+
+        var ex = Assert.Throws<InvalidModelException>(() => new FemAnalysis().Run(model));
+
+        Assert.False(ex.Validation.IsValid);
+        Assert.Same(model, ex.Model);
+    }
+
+    [Fact]
+    public void Validate_ValidModel_IsValidWithNoErrors()
+    {
+        var result = new FemAnalysis().Validate(ModelBuilder.Build());
+
+        Assert.True(result.IsValid);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void Validate_ModelBreakingMultipleRules_AccumulatesErrorsFromEachRule()
+    {
+        // load references a missing node (ReferenceIntegrity).
+        // two supports on node 0 (SingleAssignmentPerNode).
+        var model = ModelBuilder.Build(
+            loads: [new NodalLoad(99, 10, 0, 0)],
+            supports:
+            [
+                new Support(0, Restraint.Rigid(), Restraint.Rigid()),
+                new Support(0, uy: Restraint.Rigid()),
+            ]);
+
+        var result = new FemAnalysis().Validate(model);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.Code == ModelValidationErrorCode.UnknownReference);
+        Assert.Contains(result.Errors, e => e.Code == ModelValidationErrorCode.DuplicateNodeAssignment);
+    }
+}

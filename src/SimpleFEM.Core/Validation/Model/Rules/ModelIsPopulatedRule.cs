@@ -2,6 +2,13 @@
 
 namespace SimpleFEM.Core.Validation.Model.Rules;
 
+/// <summary>
+/// 
+/// </summary>
+/// <remarks>
+/// Materials and sections are technically not needed for a complete model (eg a model of only springs...), 
+/// they are only dependencies of specific element types.
+/// </remarks>
 internal sealed class ModelIsPopulatedRule : IModelValidationRule
 {
     public IEnumerable<ValidationError<ModelValidationErrorCode>> Validate(FemModel model)
