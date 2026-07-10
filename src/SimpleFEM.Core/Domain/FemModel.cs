@@ -33,9 +33,12 @@ public sealed class FemModel
         Loads = loads;
         Supports = supports;
 
-        _nodeById = Nodes.ToDictionary(n => n.Id);
-        _materialById = Materials.ToDictionary(m => m.Id);
-        _sectionById = Sections.ToDictionary(s => s.Id);
+
+        // ToDictionary() throws ArgumentException on duplicate ids,
+        // duplicate id detection is the responsibility of the validation rules so it can be reported
+        _nodeById = BuildLookup(Nodes, n => n.Id);
+        _materialById = BuildLookup(Materials, m => m.Id);
+        _sectionById = BuildLookup(Sections, s => s.Id);
     }
 
     internal Node GetNode(int id) =>
@@ -66,5 +69,13 @@ public sealed class FemModel
             nodes,
             GetMaterial(element.MaterialId),
             GetSection(element.SectionId));
+    }
+
+    private static Dictionary<int, T> BuildLookup<T>(IReadOnlyList<T> items, Func<T, int> idOf)
+    {
+        var lookup = new Dictionary<int, T>(items.Count);
+        foreach (var item in items)
+            lookup[idOf(item)] = item;
+        return lookup;
     }
 }
