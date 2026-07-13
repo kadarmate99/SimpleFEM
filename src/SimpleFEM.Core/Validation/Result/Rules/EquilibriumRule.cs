@@ -1,11 +1,8 @@
-﻿using SimpleFEM.Core.Domain;
-using SimpleFEM.Core.Results;
-
-namespace SimpleFEM.Core.Validation.Result.Rules;
+﻿namespace SimpleFEM.Core.Validation.Result.Rules;
 
 internal sealed class EquilibriumRule : IResultValidationRule
 {
-    public IEnumerable<ValidationError<ResultValidationErrorCode>> Validate(FemModel model, AnalysisResult result)
+    public IEnumerable<ValidationError<ResultValidationErrorCode>> Validate(ResultValidationContext context)
     {
         // TODO: Implement IResultValidationRule EquilibriumRule
         return [];

@@ -18,6 +18,7 @@ public class FemAnalysis
     private readonly PenaltyMethodBoundaryConditionApplier bcApplier;
     private readonly PostProcessor postProcessor;
     private readonly ILinearSolver solver;
+    private readonly FemAnalysisOptions options;
 
     /// <summary>Creates a FEM analyzer with the default options.</summary>
     public FemAnalysis() : this(new FemAnalysisOptions()) { }
@@ -33,6 +34,7 @@ public class FemAnalysis
         bcApplier = new PenaltyMethodBoundaryConditionApplier(options.RigidSupportStiffness);
         postProcessor = new PostProcessor();
         solver = new DenseLinearSolver();
+        this.options = options;
     }
 
     public ValidationResult<ModelValidationErrorCode> Validate(FemModel model)
@@ -67,7 +69,17 @@ public class FemAnalysis
 
         var result = postProcessor.Recover(model, dofMap, assembledSystem, u);
 
-        var resultValidation = resultValidator.Validate(model, result);
+        var resultContext = new ResultValidationContext(
+            model,
+            result,
+            dofMap,
+            assembledSystem,
+            constrainedSystem,
+            u,
+            restrainedDofs,
+            options);
+
+        var resultValidation = resultValidator.Validate(resultContext);
         return new AnalysisOutcome(result, resultValidation);
     }
 }
